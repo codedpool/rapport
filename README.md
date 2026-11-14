@@ -33,7 +33,6 @@ Anyone can try Rapport by pasting their own keys: a Gnani key and an LLM key (Op
 client/   Next.js (JavaScript) web app
 server/   Python backend (FastAPI, Pipecat, MongoDB)
 docs/     Build brief
-plan.md   Build plan with progress checkboxes
 ```
 
 ## Running locally
@@ -53,7 +52,7 @@ npm install
 npm run dev
 ```
 
-Setup details are filled in as the build progresses; see `plan.md`.
+Setup details are filled in as the build progresses.
 
 ## Privacy
 
