@@ -1,99 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Mic } from "lucide-react";
-
-// The product's whole idea, said three ways. The full line changes, not one word.
-const LINES = [
-  { lang: "en", text: "Answer in the language you think in." },
-  { lang: "hi", text: "जिस भाषा में सोचते हैं, उसी में जवाब दीजिए।" },
-  { lang: "hinglish", text: "Jis language mein sochte ho, usi mein bolo." },
-];
-
-const ANSWER = "Database पर load बहुत ज़्यादा था, तो हमने Redis cache लगाया और p99 latency अस्सी milliseconds पर आ गई।".split(" ");
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { ArrowRight } from "lucide-react";
 
 export default function Hero() {
   const reduce = useReducedMotion();
-  const [i, setI] = useState(0);
-  const [words, setWords] = useState(reduce ? ANSWER.length : 0);
+  const { scrollY } = useScroll();
+  // Gentle parallax: the painting drifts slower than the page.
+  const y = useTransform(scrollY, [0, 800], [0, reduce ? 0 : 140]);
+  const fade = useTransform(scrollY, [0, 500], [1, reduce ? 1 : 0.2]);
 
-  useEffect(() => {
-    if (reduce) return;
-    const t = setInterval(() => setI((n) => (n + 1) % LINES.length), 4200);
-    return () => clearInterval(t);
-  }, [reduce]);
+  const rise = (d) =>
+    reduce ? {} : { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.9, delay: d, ease: [0.22, 1, 0.36, 1] } };
 
-  useEffect(() => {
-    if (reduce) return;
-    let n = 0;
-    const t = setInterval(() => {
-      n = n >= ANSWER.length + 8 ? 0 : n + 1; // pause on the full line, then start over
-      setWords(Math.min(n, ANSWER.length));
-    }, 260);
-    return () => clearInterval(t);
-  }, [reduce]);
-
-  const line = LINES[i];
   return (
-    <section className="relative min-h-[100svh] flex items-end md:items-center overflow-hidden bg-night">
-      <Image
-        src="/images/hero.jpg"
-        alt="A candidate explaining her answer across the table in a bright office"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-[30%_center]"
-      />
-      <div className="absolute inset-0 veil-right" aria-hidden />
+    <section className="relative h-[100svh] min-h-[640px] overflow-hidden bg-[#3b2a4a]">
+      <motion.div className="absolute inset-0 will-change-transform" style={{ y }}>
+        <Image src="/images/hero.webp" alt="A young woman with a laptop on a hillside at sunset, looking at the sky"
+          fill priority sizes="100vw" className="object-cover object-[68%_center] scale-[1.08]" />
+      </motion.div>
+      {/* Veil: left side for the headline, bottom for the fade into the page */}
+      <div aria-hidden className="absolute inset-0 bg-[linear-gradient(90deg,rgba(40,22,40,0.62)_0%,rgba(40,22,40,0.35)_38%,rgba(40,22,40,0)_62%)]" />
+      <div aria-hidden className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[rgba(40,22,40,0.45)] to-transparent" />
+      <div aria-hidden className="md:hidden absolute inset-0 bg-[rgba(40,22,40,0.3)]" />
+      <div aria-hidden className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-paper" />
 
-      <div className="relative w-full mx-auto max-w-7xl px-4 sm:px-6 pt-28 pb-14 md:py-0 grid md:grid-cols-2">
-        <div className="md:col-start-2 text-white">
-          <p className="text-white/80 text-lg">A voice interviewer for Hindi, English and Hinglish</p>
-          <h1 className="display mt-4 text-[2.6rem] sm:text-6xl lg:text-[4.4rem] min-h-[2.3em] sm:min-h-[2.2em]" lang={line.lang === "hi" ? "hi" : "en"}>
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={line.lang}
-                className="block"
-                initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -14, filter: "blur(6px)" }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {line.text}
-              </motion.span>
-            </AnimatePresence>
-          </h1>
-          <p className="mt-5 max-w-lg text-lg sm:text-xl text-white/85 leading-relaxed">
-            Rapport asks real follow-up questions and judges what you say, not how English it sounds. Practise for your
-            next role, or screen candidates in the language they&apos;re best in.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/practice" className="btn btn-accent text-lg !px-6 !py-3.5">
-              Start a practice interview
+      <motion.div style={{ opacity: fade }} className="relative h-full mx-auto max-w-7xl px-5 sm:px-8 flex items-center">
+        <div className="max-w-[46rem] text-white pt-16">
+          <motion.h1 {...rise(0.1)} className="display text-[2.7rem] sm:text-6xl lg:text-[4.1rem] drop-shadow-[0_2px_18px_rgba(40,20,30,0.35)]">
+            Practise interviews that feel real, <em className="block">in your own language.</em>
+          </motion.h1>
+          <motion.p {...rise(0.3)} className="mt-6 text-lg sm:text-xl text-white/90 leading-relaxed max-w-lg">
+            An AI voice interview partner for Indian job seekers. Answer in Hindi, English or Hinglish, get honest
+            feedback, and walk into the real one with confidence.
+          </motion.p>
+          <motion.div {...rise(0.5)} className="mt-9 flex flex-wrap items-center gap-3">
+            <Link href="/practice" className="btn btn-accent text-lg !px-7 !py-3.5">
+              Start practising for free <ArrowRight size={19} />
             </Link>
-            <a href="/auth/login?connection=google-oauth2&returnTo=/recruiter" className="btn btn-glass text-lg !px-6 !py-3.5">
-              Screen candidates
-            </a>
-          </div>
-
-          <div className="mt-10 max-w-lg rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md p-4 sm:p-5" aria-hidden>
-            <div className="flex items-center gap-2 text-sm text-white/75">
-              <span className="relative grid place-items-center h-6 w-6 rounded-full bg-sage">
-                <Mic size={13} />
-                {!reduce && <span className="absolute inset-0 rounded-full bg-sage animate-ping opacity-40" />}
-              </span>
-              Candidate, transcribed live
-            </div>
-            <p className="mt-3 text-[1.05rem] leading-relaxed text-white min-h-[3.2em]" lang="hi">
-              {ANSWER.slice(0, words).join(" ")}
-              {words < ANSWER.length && <span className="inline-block w-0.5 h-5 align-[-3px] ml-1 bg-haldi animate-pulse" />}
-            </p>
-          </div>
+            <a href="#how" className="btn btn-glass text-lg !px-6 !py-3.5">See how it works</a>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

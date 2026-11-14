@@ -30,7 +30,7 @@ export default function RecruiterDashboard() {
 
   return (
     <>
-    <PageHeader image="/images/team.jpg" title="Hiring"
+    <PageHeader image="/images/recruiter.webp" title="Hiring"
       subtitle="Build an interview once, invite candidates by email, and review scored transcripts." />
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
       <Tabs value={tab} onChange={(k) => { setTab(k); setEditing(null); }}

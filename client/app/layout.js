@@ -1,25 +1,28 @@
-import { Anek_Devanagari } from "next/font/google";
+import { Anek_Devanagari, Fraunces, Outfit } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import "./globals.css";
 
-// One variable family for Latin and Devanagari, so Hinglish lines read as one voice.
-const anek = Anek_Devanagari({
-  variable: "--font-anek",
-  subsets: ["latin", "devanagari"],
-  axes: ["wdth"],
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["SOFT", "WONK", "opsz"],
   display: "swap",
 });
+const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"], display: "swap" });
+// Devanagari glyphs for Hindi and Hinglish lines; Latin falls through to Outfit/Fraunces.
+const deva = Anek_Devanagari({ variable: "--font-deva", subsets: ["devanagari"], display: "swap" });
 
 export const metadata = {
-  title: "Rapport · Voice interviews in Hindi, English and Hinglish",
+  title: "Rapport · Practise interviews in your own language",
   description:
-    "Practise or run spoken interviews in Hindi, English or Hinglish, with follow-up questions and feedback that quotes what you actually said.",
+    "An AI voice interview partner for Indian job seekers. Answer in Hindi, English or Hinglish and get feedback that quotes what you actually said.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${anek.variable} h-full antialiased`}>
+    <html lang="en" className={`${fraunces.variable} ${outfit.variable} ${deva.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <Nav />
         <main className="flex-1">{children}</main>

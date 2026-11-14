@@ -10,9 +10,9 @@ import Segmented from "@/components/ui/Segmented";
 import Switch from "@/components/ui/Switch";
 
 const STEPS = [
-  { id: "role", label: "Role", image: "/images/practice.jpg", alt: "A candidate getting ready at his laptop" },
-  { id: "style", label: "Style", image: "/images/conversation.jpg", alt: "Two people in conversation by a window" },
-  { id: "start", label: "Start", image: "/images/gear.jpg", alt: "A microphone and headphones on a desk" },
+  { id: "role", label: "Role", image: "/images/candidate.webp", alt: "A young man practising at his laptop by a sunny window" },
+  { id: "style", label: "Style", image: "/images/hero.webp", alt: "A young woman with a laptop on a hillside at sunset" },
+  { id: "start", label: "Start", image: "/images/dusk.webp", alt: "A candidate with headphones on a rooftop at dusk" },
 ];
 
 const ROLE_IDEAS = ["Software Engineer", "Product Manager", "Data Analyst", "Sales Executive", "Customer Support", "Campus placement"];
@@ -55,12 +55,12 @@ export default function Wizard() {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-12 grid lg:grid-cols-[0.85fr_1.15fr] gap-8 lg:gap-14">
       {/* Image panel, one photo per step */}
       <div className="hidden lg:block">
-        <div className="sticky top-24 aspect-[4/5] rounded-[1.75rem] overflow-hidden bg-night">
+        <div className="sticky top-24 aspect-[4/5] rounded-[1.75rem] overflow-hidden bg-night shadow-[0_30px_70px_-40px_rgba(74,26,20,0.5)]">
           <AnimatePresence initial={false}>
             <motion.div key={step} className="absolute inset-0"
               initial={{ opacity: 0, scale: 1.04 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
               transition={{ duration: 0.6 }}>
-              <Image src={STEPS[step].image} alt={STEPS[step].alt} fill sizes="40vw" className="object-cover" priority={step === 0} />
+              <Image src={STEPS[step].image} alt={STEPS[step].alt} fill sizes="40vw" className="object-cover object-[70%_center]" priority={step === 0} />
             </motion.div>
           </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-t from-night/80 via-transparent to-transparent" aria-hidden />
@@ -99,7 +99,7 @@ export default function Wizard() {
           {step > 0 ? (
             <button className="btn btn-ghost" onClick={() => go(step - 1)}><ChevronLeft size={18} /> Back</button>
           ) : <span />}
-          {step < 2 && <button className="btn btn-primary !px-6" onClick={() => go(step + 1)}>Continue</button>}
+          {step < 2 && <button className="btn btn-accent !px-7" onClick={() => go(step + 1)}>Continue</button>}
         </div>
       </div>
     </div>
@@ -149,6 +149,7 @@ function RoleStep({ spec, set, onNext }) {
         onChange={(e) => set("role")(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && onNext()}
         placeholder="e.g. Backend Engineer"
+        style={{ outline: "none" }}
         className="mt-8 w-full bg-transparent border-0 border-b-2 border-line focus:border-accent outline-none text-3xl sm:text-4xl py-3 text-ink placeholder:text-[#b4bacb] transition-colors" />
       <div className="mt-5 flex flex-wrap gap-2">
         {ROLE_IDEAS.map((r) => (
@@ -207,10 +208,10 @@ function StyleStep({ spec, set }) {
             const on = spec.language === l.id;
             return (
               <button key={l.id} type="button" onClick={() => set("language")(l.id)} aria-pressed={on}
-                className={`relative text-left rounded-2xl border p-4 transition-colors ${on ? "border-accent bg-accent text-white" : "border-line bg-white hover:border-ink-2"}`}>
+                className={`relative text-left rounded-2xl border p-4 transition-colors ${on ? "border-haldi bg-haldi-soft" : "border-line bg-white hover:border-ink-2"}`}>
                 <span className="text-lg font-semibold">{l.name}</span>
-                <span lang={l.lang} className={`mt-2 block text-[0.92rem] leading-snug ${on ? "text-white/80" : "text-muted"}`}>“{l.sample}”</span>
-                {on && <Check size={18} className="absolute top-4 right-4 text-haldi" />}
+                <span lang={l.lang} className="mt-2 block text-[0.92rem] leading-snug text-muted">“{l.sample}”</span>
+                {on && <Check size={18} className="absolute top-4 right-4 text-haldi-ink" />}
               </button>
             );
           })}

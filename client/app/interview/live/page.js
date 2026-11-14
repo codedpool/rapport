@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Languages, MessageSquareText, Mic, PhoneOff, Video, VideoOff, X } from "lucide-react";
@@ -217,8 +218,9 @@ export default function LivePage() {
 
   if (phase === "error") {
     return (
-      <div className="min-h-[100svh] bg-night text-white grid place-items-center px-4">
-        <div className="max-w-md text-center">
+      <div className="relative min-h-[100svh] bg-night text-white grid place-items-center px-4 overflow-hidden">
+        <Image src="/images/dusk.webp" alt="" fill sizes="100vw" className="object-cover opacity-50" />
+        <div className="relative max-w-md text-center">
           <h1 className="display display-tight text-4xl">The interview stopped</h1>
           <p className="mt-4 text-white/75 text-lg">{error}</p>
           <Link href="/practice" className="btn btn-accent mt-8">Start a new interview</Link>
@@ -229,9 +231,11 @@ export default function LivePage() {
 
   return (
     <div className="relative min-h-[100svh] bg-night text-white overflow-hidden flex flex-col">
+      <Image src="/images/dusk.webp" alt="" fill priority sizes="100vw" className="object-cover object-[30%_center]" />
+      <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(28,22,51,0.55)_0%,rgba(28,22,51,0.72)_55%,rgba(28,22,51,0.92)_100%)]" />
       {/* Soft light that follows who is talking. */}
       <motion.div aria-hidden className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[46rem] w-[46rem] rounded-full blur-3xl"
-        animate={{ backgroundColor: tone === "speaking" ? "rgba(232,179,49,0.16)" : tone === "listening" ? "rgba(63,107,78,0.28)" : "rgba(35,42,92,0.55)" }}
+        animate={{ backgroundColor: tone === "speaking" ? "rgba(245,154,74,0.18)" : tone === "listening" ? "rgba(63,107,78,0.28)" : "rgba(35,42,92,0.55)" }}
         transition={{ duration: 0.8 }} />
 
       <header className="relative z-10 flex items-center justify-between gap-4 px-4 sm:px-8 h-16">
@@ -248,7 +252,7 @@ export default function LivePage() {
         <div className="relative grid place-items-center h-56 w-56 sm:h-64 sm:w-64">
           {[0, 1, 2].map((r) => (
             <motion.span key={r} aria-hidden className="absolute inset-0 rounded-full border"
-              style={{ borderColor: tone === "listening" ? "rgba(132,190,150,0.35)" : "rgba(232,179,49,0.28)" }}
+              style={{ borderColor: tone === "listening" ? "rgba(132,190,150,0.35)" : "rgba(245,154,74,0.4)" }}
               animate={tone === "idle" ? { scale: 1 + r * 0.08, opacity: 0.35 } : { scale: [1 + r * 0.08, 1.25 + r * 0.12], opacity: [0.5, 0] }}
               transition={tone === "idle" ? { duration: 0.6 } : { duration: 2.2, repeat: Infinity, delay: r * 0.5, ease: "easeOut" }} />
           ))}
@@ -256,8 +260,8 @@ export default function LivePage() {
             style={{
               background: tone === "listening"
                 ? "radial-gradient(circle at 35% 30%, #cfe6d6, #3f6b4e 62%, #1f3a29)"
-                : "radial-gradient(circle at 35% 30%, #fbe3a6, #e8b331 55%, #8a5a07)",
-              boxShadow: tone === "listening" ? "0 40px 120px -20px rgba(63,107,78,0.7)" : "0 40px 120px -20px rgba(232,179,49,0.55)",
+                : "radial-gradient(circle at 35% 30%, #ffd7a8, #f59a4a 45%, #e8601f 100%)",
+              boxShadow: tone === "listening" ? "0 40px 120px -20px rgba(63,107,78,0.7)" : "0 40px 120px -20px rgba(232,96,31,0.6)",
             }} />
         </div>
 

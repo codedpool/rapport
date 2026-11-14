@@ -8,9 +8,10 @@ import { Menu, X } from "lucide-react";
 import Logo from "./Logo";
 
 const LINKS_OUT = [
-  { href: "/practice", label: "Practise" },
-  { href: "/#teams", label: "For teams" },
-  { href: "/privacy", label: "Privacy" },
+  { href: "/#how", label: "How it works" },
+  { href: "/#feedback", label: "Features" },
+  { href: "/#teams", label: "For Recruiters" },
+  { href: "/#faqs", label: "FAQs" },
 ];
 const LINKS_IN = [
   { href: "/practice", label: "Practise" },
@@ -18,6 +19,7 @@ const LINKS_IN = [
   { href: "/recruiter", label: "Hiring" },
 ];
 
+// Full-width bar: clear over the landing painting, frosted white once you scroll.
 export default function HeaderShell({ user }) {
   const pathname = usePathname();
   const overHero = pathname === "/";
@@ -57,7 +59,7 @@ export default function HeaderShell({ user }) {
                   key={l.href}
                   href={l.href}
                   className={`relative px-3.5 py-2 rounded-lg text-[0.97rem] font-medium transition-colors ${
-                    clear ? "text-white/85 hover:text-white" : active ? "text-ink" : "text-ink-2 hover:text-ink"
+                    clear ? "text-white/90 hover:text-white" : active ? "text-accent" : "text-ink-2 hover:text-accent"
                   }`}
                 >
                   {l.label}
@@ -78,7 +80,7 @@ export default function HeaderShell({ user }) {
               <Link
                 href="/account"
                 className={`flex items-center gap-2 rounded-full pl-1 pr-3 py-1 border transition-colors ${
-                  clear ? "border-white/30 text-white" : "border-line text-ink hover:border-ink-2 bg-white"
+                  clear ? "border-white/40 text-white" : "border-line text-ink hover:border-ink-2 bg-white"
                 }`}
               >
                 <Avatar user={user} />
@@ -90,7 +92,7 @@ export default function HeaderShell({ user }) {
                   Sign in
                 </a>
                 <Link href="/practice" className="btn btn-accent !py-2">
-                  Start practising
+                  Get Started
                 </Link>
               </>
             )}
@@ -127,7 +129,10 @@ export default function HeaderShell({ user }) {
                     Account
                   </Link>
                 ) : (
-                  <a href={loginHref} className="btn btn-primary mt-2">Sign in with Google</a>
+                  <div className="flex gap-2 mt-2">
+                    <a href={loginHref} className="btn btn-ghost flex-1">Sign in</a>
+                    <Link href="/practice" onClick={() => setOpen(false)} className="btn btn-accent flex-1">Get Started</Link>
+                  </div>
                 )}
               </div>
             </motion.nav>
@@ -144,7 +149,7 @@ function Avatar({ user }) {
     return <img src={user.picture} alt="" className="h-7 w-7 rounded-full" referrerPolicy="no-referrer" />;
   }
   return (
-    <span className="h-7 w-7 rounded-full bg-haldi text-accent-ink grid place-items-center text-xs font-bold">
+    <span className="h-7 w-7 rounded-full bg-haldi text-white grid place-items-center text-xs font-bold">
       {(user.name || "?").slice(0, 1).toUpperCase()}
     </span>
   );

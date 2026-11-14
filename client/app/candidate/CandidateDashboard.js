@@ -28,7 +28,7 @@ export default function CandidateDashboard({ name, email }) {
   const mocks = (interviews || []).filter((i) => i.kind === "mock");
   return (
     <>
-    <PageHeader image="/images/practice.jpg" title={name ? `Hi ${name.split(" ")[0]}` : "Your interviews"}
+    <PageHeader image="/images/candidate.webp" title={name ? `Hi ${name.split(" ")[0]}` : "Your interviews"}
       subtitle={`Interviews sent to ${email} show up here, next to your practice history.`}>
       <Link href="/practice" className="btn btn-accent">Practise now</Link>
     </PageHeader>
