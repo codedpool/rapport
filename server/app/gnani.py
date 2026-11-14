@@ -116,7 +116,8 @@ class RapportGnaniTTS(GnaniTTSService):
         await super()._handle_audio_chunk(audio_bytes)
 
 
-FAST_TTS_LANG = {"en": "en-IN", "hi": "hi-IN", "hinglish": "hi-en"}
+# The SDK validator rejects "hi-en" even for Poorvi, so Hinglish uses script auto-detection.
+FAST_TTS_LANG = {"en": "en-IN", "hi": "hi-IN", "hinglish": "auto"}
 
 
 def tts_voice(engine: str, voice: str, language: str) -> tuple[str, str, str]:

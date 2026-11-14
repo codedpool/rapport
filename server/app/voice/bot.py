@@ -273,6 +273,7 @@ async def run_interview(ws: WebSocket, session: LiveSession) -> None:
         await asyncio.sleep(max(cap - elapsed(), 0))
         if not state["ending"]:
             state["ending"] = True
+            await events.send({"type": "status", "status": "ending"})
             await task.queue_frames([TTSSpeakFrame(FORCED_CLOSE[state["language"]]), EndFrame()])
         await asyncio.sleep(25)
         await task.cancel()  # last resort if the goodbye never finishes

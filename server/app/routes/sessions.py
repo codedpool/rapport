@@ -133,6 +133,12 @@ async def voice_socket(ws: WebSocket, session_id: str):
         await run_interview(ws, session)
     except Exception as e:
         logger.error(f"session {session.id} crashed: {type(e).__name__}")
+        try:
+            await records.finalize(session.interview_id, transcript=[], feedback=None, status="failed",
+                                   duration_s=0, language_switches=[])
+            await ws.send_json({"type": "error", "message": "The interview hit a server error. Please start again."})
+        except Exception:
+            pass
     finally:
         await store.remove(session.id)
         try:
