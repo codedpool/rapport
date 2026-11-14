@@ -23,7 +23,6 @@ export default function Hero() {
       </motion.div>
       {/* Veil: left side for the headline, bottom for the fade into the page */}
       <div aria-hidden className="absolute inset-0 bg-[linear-gradient(90deg,rgba(40,22,40,0.62)_0%,rgba(40,22,40,0.35)_38%,rgba(40,22,40,0)_62%)]" />
-      <div aria-hidden className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[rgba(40,22,40,0.45)] to-transparent" />
       <div aria-hidden className="md:hidden absolute inset-0 bg-[rgba(40,22,40,0.3)]" />
       <div aria-hidden className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-paper" />
 
