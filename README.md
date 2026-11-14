@@ -67,7 +67,6 @@ Anyone can try Rapport with their own Gnani key and an LLM key (OpenRouter or Ge
 ```
 client/   Next.js (JavaScript) web app
 server/   Python API: FastAPI, Pipecat, Gnani, MongoDB
-docs/     Build brief
 ```
 
 ## Running locally
