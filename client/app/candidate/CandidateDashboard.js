@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import PageHeader from "@/components/ui/PageHeader";
+import Tabs from "@/components/ui/Tabs";
 
 const STATUS = {
   pending: { label: "To do", cls: "bg-accent-soft text-accent-ink" },
@@ -25,15 +27,13 @@ export default function CandidateDashboard({ name, email }) {
 
   const mocks = (interviews || []).filter((i) => i.kind === "mock");
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
-      <h1 className="display text-4xl sm:text-5xl">{name ? `Hi ${name.split(" ")[0]}` : "Your interviews"}</h1>
-      <p className="mt-2 text-ink-2">Scheduled interviews sent to {email} appear here, along with your practice history.</p>
-
-      <div className="seg mt-8" role="tablist">
-        {[["scheduled", "Scheduled"], ["practice", "Practice"], ["results", "All results"]].map(([k, l]) => (
-          <button key={k} aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>
-        ))}
-      </div>
+    <>
+    <PageHeader image="/images/practice.jpg" title={name ? `Hi ${name.split(" ")[0]}` : "Your interviews"}
+      subtitle={`Interviews sent to ${email} show up here, next to your practice history.`}>
+      <Link href="/practice" className="btn btn-accent">Practise now</Link>
+    </PageHeader>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+      <Tabs value={tab} onChange={setTab} tabs={[["scheduled", "Scheduled"], ["practice", "Practice"], ["results", "All results"]]} />
       {error && <p className="mt-4 text-danger text-sm">{error}</p>}
 
       {tab === "scheduled" && (
@@ -55,7 +55,7 @@ export default function CandidateDashboard({ name, email }) {
                 </div>
                 <div className="mt-2 text-lg font-semibold">{a.role || a.template_name}</div>
                 <div className="text-sm text-muted">
-                  {a.template_name} · {a.duration_min} min · {LANG[a.language] || ""}
+                  {[a.template_name, `${a.duration_min} min`, LANG[a.language]].filter(Boolean).join(", ")}
                 </div>
               </div>
               {a.status === "completed" ? (
@@ -89,6 +89,7 @@ export default function CandidateDashboard({ name, email }) {
 
       {tab === "results" && <div className="mt-6"><ResultList items={interviews || []} empty="No interviews yet." /></div>}
     </div>
+    </>
   );
 }
 
@@ -101,7 +102,7 @@ function ResultList({ items, empty }) {
           <span>
             <span className="font-medium">{i.spec?.role}</span>
             <span className="block text-sm text-muted">
-              {i.kind === "scheduled" ? "Scheduled" : "Practice"} · {new Date(i.created_at).toLocaleString()}
+              {i.kind === "scheduled" ? "Scheduled" : "Practice"}, {new Date(i.created_at).toLocaleString()}
             </span>
           </span>
           <span className="text-right">

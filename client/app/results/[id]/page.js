@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { api, clearGuestToken, getGuestToken } from "@/lib/api";
 import Feedback, { Transcript } from "@/components/Feedback";
+import Tabs from "@/components/ui/Tabs";
 
 const TYPE = { technical: "Technical", hr: "HR", mixed: "Mixed" };
 const LANG = { en: "English", hi: "Hindi", hinglish: "Hinglish" };
@@ -90,7 +91,7 @@ function ResultsView({ id }) {
             <span className="chip">{LANG[doc.spec?.language]}</span>
             {doc.duration_s ? <span className="chip">{Math.round(doc.duration_s / 60)} min</span> : null}
           </div>
-          <h1 className="display text-4xl mt-3">{doc.spec?.role}</h1>
+          <h1 className="display display-tight text-4xl sm:text-5xl text-accent mt-3">{doc.spec?.role}</h1>
           <p className="text-sm text-muted mt-1">{new Date(doc.created_at).toLocaleString()}</p>
         </div>
         {doc.claimable && (
@@ -112,10 +113,7 @@ function ResultsView({ id }) {
         {claimMsg && !doc.claimable && <p className="text-sm text-sage">{claimMsg}</p>}
       </div>
 
-      <div className="seg mt-8" role="tablist">
-        <button aria-pressed={tab === "feedback"} onClick={() => setTab("feedback")}>Feedback</button>
-        <button aria-pressed={tab === "transcript"} onClick={() => setTab("transcript")}>Transcript</button>
-      </div>
+      <Tabs className="mt-8" value={tab} onChange={setTab} tabs={[["feedback", "Feedback"], ["transcript", "Transcript"]]} />
 
       <div className="mt-6">
         {tab === "feedback" ? (

@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
+import { Languages, MessageSquareText, Mic, PhoneOff, Video, VideoOff, X } from "lucide-react";
+import Logo from "@/components/Logo";
 import { clearLive, peekLive } from "@/lib/api";
 import { PcmPlayer, startMic } from "@/lib/audio";
 import { LANGUAGES } from "@/components/SpecFields";
@@ -29,6 +32,8 @@ export default function LivePage() {
   const [language, setLanguage] = useState("en");
   const [cameraOn, setCameraOn] = useState(true);
   const [micLevel, setMicLevel] = useState(0);
+  const [drawer, setDrawer] = useState(false);
+  const [langMenu, setLangMenu] = useState(false);
 
   const wsRef = useRef(null);
   const playerRef = useRef(null);
@@ -198,95 +203,179 @@ export default function LivePage() {
     if (wsRef.current?.readyState === 1) wsRef.current.send(JSON.stringify({ type: "set_language", language: lang }));
   };
 
-  const orbState = botSpeaking ? "speaking" : userSpeaking ? "listening" : thinking ? "thinking" : "idle";
   const status =
-    phase === "connecting" ? "Connecting…"
-      : phase === "ending" ? "Wrapping up…"
-      : phase === "processing" ? "Writing your feedback…"
+    phase === "connecting" ? "Connecting to your interviewer"
+      : phase === "ending" ? "Wrapping up"
+      : phase === "processing" ? "Writing your feedback"
       : botSpeaking ? `${info?.interviewer || "Interviewer"} is speaking`
-      : userSpeaking ? "Listening…"
-      : thinking ? "Thinking…"
+      : userSpeaking ? "Listening"
+      : thinking ? "Thinking"
       : "Your turn";
+  const tone = botSpeaking ? "speaking" : userSpeaking ? "listening" : "idle";
   const remaining = info ? info.duration_min * 60 - elapsed : 0;
+  const showDots = phase !== "live" || (thinking && !botSpeaking && !userSpeaking);
 
   if (phase === "error") {
     return (
-      <div className="mx-auto max-w-xl px-4 py-24 text-center">
-        <h1 className="display text-3xl">Interview stopped</h1>
-        <p className="mt-3 text-ink-2">{error}</p>
-        <Link href="/practice" className="btn btn-primary mt-8">Start a new interview</Link>
+      <div className="min-h-[100svh] bg-night text-white grid place-items-center px-4">
+        <div className="max-w-md text-center">
+          <h1 className="display display-tight text-4xl">The interview stopped</h1>
+          <p className="mt-4 text-white/75 text-lg">{error}</p>
+          <Link href="/practice" className="btn btn-accent mt-8">Start a new interview</Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="text-sm text-muted">{info ? `Interview with ${info.interviewer}` : "Interview"}</div>
-          <div className="font-mono text-2xl tabular-nums" aria-live="off">
-            {fmt(elapsed)} <span className="text-muted text-base">/ {info ? `${info.duration_min}:00` : "–"}</span>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="text-sm text-muted" htmlFor="lang">Interviewer language</label>
-          <select id="lang" className="field !w-auto !py-2" value={language} disabled={phase !== "live"}
-            onChange={(e) => switchLanguage(e.target.value)}>
-            {LANGUAGES.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
-          </select>
-          <button className="btn btn-danger !py-2" onClick={end} disabled={phase !== "live"}>End interview</button>
-        </div>
-      </div>
+    <div className="relative min-h-[100svh] bg-night text-white overflow-hidden flex flex-col">
+      {/* Soft light that follows who is talking. */}
+      <motion.div aria-hidden className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[46rem] w-[46rem] rounded-full blur-3xl"
+        animate={{ backgroundColor: tone === "speaking" ? "rgba(232,179,49,0.16)" : tone === "listening" ? "rgba(63,107,78,0.28)" : "rgba(35,42,92,0.55)" }}
+        transition={{ duration: 0.8 }} />
 
-      <div className="mt-6 grid lg:grid-cols-[1.2fr_1fr] gap-6">
-        <section className="card p-6 sm:p-10 flex flex-col items-center justify-center min-h-[26rem] text-center">
-          <div ref={orbRef} className="orb" data-state={orbState} aria-hidden />
-          <div className="mt-8 font-medium" role="status" aria-live="polite">{status}</div>
-          {remaining < 60 && remaining > 0 && phase === "live" && (
-            <div className="mt-2 text-sm text-amber">About a minute left</div>
-          )}
-          <p className="mt-4 max-w-lg text-lg leading-relaxed text-ink-2 min-h-[3.5rem]">{caption}</p>
-          {phase === "live" && !info?.headphones && (
-            <p className="mt-4 text-xs text-muted">Speakers mode: your mic pauses while the interviewer talks.</p>
-          )}
-        </section>
+      <header className="relative z-10 flex items-center justify-between gap-4 px-4 sm:px-8 h-16">
+        <Logo tone="light" />
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-white/60 hidden sm:inline">{info ? `Interview with ${info.interviewer}` : ""}</span>
+          <span className="rounded-full bg-white/10 border border-white/15 px-3 py-1 tabular-nums">
+            {fmt(elapsed)} / {info ? `${info.duration_min}:00` : "–"}
+          </span>
+        </div>
+      </header>
 
-        <section className="flex flex-col gap-6">
-          <div className="card overflow-hidden relative aspect-video bg-ink">
-            {cameraOn ? (
-              <video ref={videoRef} autoPlay muted playsInline className="h-full w-full object-cover -scale-x-100" />
-            ) : (
-              <div className="h-full w-full grid place-items-center text-paper/70 text-sm">Camera off</div>
-            )}
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-              <span className="chip !bg-black/50 !text-white !border-white/20">
-                <span className="h-2 w-2 rounded-full" style={{ background: userSpeaking ? "#7fd3a0" : "#aaa", transform: `scale(${1 + micLevel * 2})` }} />
-                You
-              </span>
-              <button className="chip !bg-black/50 !text-white !border-white/20" onClick={() => setCameraOn((c) => !c)}>
-                {cameraOn ? "Turn camera off" : "Turn camera on"}
-              </button>
-            </div>
+      <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 text-center pb-36">
+        <div className="relative grid place-items-center h-56 w-56 sm:h-64 sm:w-64">
+          {[0, 1, 2].map((r) => (
+            <motion.span key={r} aria-hidden className="absolute inset-0 rounded-full border"
+              style={{ borderColor: tone === "listening" ? "rgba(132,190,150,0.35)" : "rgba(232,179,49,0.28)" }}
+              animate={tone === "idle" ? { scale: 1 + r * 0.08, opacity: 0.35 } : { scale: [1 + r * 0.08, 1.25 + r * 0.12], opacity: [0.5, 0] }}
+              transition={tone === "idle" ? { duration: 0.6 } : { duration: 2.2, repeat: Infinity, delay: r * 0.5, ease: "easeOut" }} />
+          ))}
+          <div ref={orbRef} className="h-40 w-40 sm:h-44 sm:w-44 rounded-full transition-[background] duration-700"
+            style={{
+              background: tone === "listening"
+                ? "radial-gradient(circle at 35% 30%, #cfe6d6, #3f6b4e 62%, #1f3a29)"
+                : "radial-gradient(circle at 35% 30%, #fbe3a6, #e8b331 55%, #8a5a07)",
+              boxShadow: tone === "listening" ? "0 40px 120px -20px rgba(63,107,78,0.7)" : "0 40px 120px -20px rgba(232,179,49,0.55)",
+            }} />
+        </div>
+
+        <p className="mt-10 text-white/70 text-lg" role="status" aria-live="polite">
+          {status}
+          {showDots && <Dots />}
+        </p>
+        <AnimatePresence mode="wait">
+          <motion.p key={caption} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-4 max-w-2xl text-2xl sm:text-[1.7rem] leading-snug text-white min-h-[2.6em]" lang="hi">
+            {caption}
+          </motion.p>
+        </AnimatePresence>
+        {remaining < 60 && remaining > 0 && phase === "live" && <p className="mt-3 text-haldi">About a minute left</p>}
+        {phase === "live" && !info?.headphones && (
+          <p className="mt-6 text-sm text-white/45">On speakers, your mic pauses while the interviewer talks.</p>
+        )}
+      </section>
+
+      {/* Camera, picture in picture. Never leaves the browser. */}
+      <AnimatePresence>
+        {cameraOn && (
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute z-10 right-4 sm:right-8 top-20 w-36 sm:w-56 aspect-[4/3] rounded-2xl overflow-hidden border border-white/15 bg-black shadow-2xl">
+            <video ref={videoRef} autoPlay muted playsInline className="h-full w-full object-cover -scale-x-100" />
+            <span className="absolute left-2 bottom-2 flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 text-xs">
+              <span className="h-2 w-2 rounded-full" style={{ background: userSpeaking ? "#84be96" : "#9aa1b2", transform: `scale(${1 + micLevel * 2})` }} />
+              You
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Controls */}
+      <nav aria-label="Interview controls" className="absolute z-20 bottom-6 inset-x-0 flex justify-center px-4">
+        <div className="flex items-center gap-2 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl p-2">
+          <span className="h-12 w-12 rounded-xl grid place-items-center bg-white/10" title="Microphone on">
+            <Mic size={20} className={userSpeaking ? "text-[#84be96]" : "text-white/80"} />
+          </span>
+          <button onClick={() => setCameraOn((c) => !c)} aria-label={cameraOn ? "Turn camera off" : "Turn camera on"}
+            className="h-12 w-12 rounded-xl grid place-items-center hover:bg-white/15">
+            {cameraOn ? <Video size={20} /> : <VideoOff size={20} className="text-white/60" />}
+          </button>
+          <div className="relative">
+            <button onClick={() => setLangMenu((o) => !o)} aria-expanded={langMenu} aria-label="Interviewer language"
+              disabled={phase !== "live"} className="h-12 px-3 rounded-xl flex items-center gap-2 hover:bg-white/15 disabled:opacity-40">
+              <Languages size={20} />
+              <span className="hidden sm:inline text-sm">{LANGUAGES.find((l) => l.id === language)?.label}</span>
+            </button>
+            <AnimatePresence>
+              {langMenu && (
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+                  className="absolute bottom-14 left-1/2 -translate-x-1/2 w-44 rounded-xl bg-white text-ink p-1 shadow-2xl">
+                  <p className="px-3 pt-2 pb-1 text-xs text-muted">Interviewer speaks</p>
+                  {LANGUAGES.map((l) => (
+                    <button key={l.id} onClick={() => { switchLanguage(l.id); setLangMenu(false); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg hover:bg-paper ${language === l.id ? "font-semibold text-accent" : ""}`}>
+                      {l.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <div className="card p-5 flex-1 max-h-80 overflow-y-auto">
-            <div className="text-sm font-semibold text-ink-2 mb-3">Transcript</div>
-            {turns.length === 0 && <p className="text-sm text-muted">The conversation will appear here.</p>}
-            <ol className="space-y-3">
-              {turns.map((t, i) => (
-                <li key={i} className={t.role === "candidate" ? "rounded-xl bg-sage-soft px-3 py-2" : "px-1"}>
-                  <span className="block text-[0.7rem] uppercase tracking-wider text-muted">
-                    {t.role === "candidate" ? "You" : info?.interviewer || "Interviewer"}
-                    {t.interrupted ? " · interrupted" : ""}
-                  </span>
-                  <span className="text-[0.95rem]">{t.text}</span>
-                </li>
-              ))}
-            </ol>
-            <div ref={transcriptEnd} />
-          </div>
-          <p className="text-xs text-muted">Camera preview stays on this device. Only your voice is sent, to transcribe your answers.</p>
-        </section>
-      </div>
+          <button onClick={() => setDrawer(true)} aria-label="Show transcript"
+            className="h-12 w-12 rounded-xl grid place-items-center hover:bg-white/15 relative">
+            <MessageSquareText size={20} />
+            {turns.length > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-haldi" />}
+          </button>
+          <button onClick={end} disabled={phase !== "live"}
+            className="h-12 px-4 rounded-xl flex items-center gap-2 bg-danger hover:bg-[#9b2b23] font-semibold disabled:opacity-40">
+            <PhoneOff size={19} />
+            <span className="hidden sm:inline">End</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Transcript drawer */}
+      <AnimatePresence>
+        {drawer && (
+          <>
+            <motion.div className="fixed inset-0 z-30 bg-black/40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setDrawer(false)} />
+            <motion.aside role="dialog" aria-label="Transcript"
+              className="fixed z-40 top-0 right-0 h-full w-full sm:w-[26rem] bg-white text-ink flex flex-col"
+              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 380, damping: 40 }}>
+              <div className="flex items-center justify-between px-5 h-16 border-b border-line">
+                <h2 className="font-semibold">Transcript</h2>
+                <button onClick={() => setDrawer(false)} aria-label="Close transcript" className="p-2 rounded-lg hover:bg-paper"><X size={20} /></button>
+              </div>
+              <ol className="flex-1 overflow-y-auto p-5 space-y-4">
+                {turns.length === 0 && <li className="text-muted">The conversation will appear here as you talk.</li>}
+                {turns.map((t, i) => (
+                  <li key={i} className={t.role === "candidate" ? "ml-8 rounded-2xl rounded-tr-md bg-sage-soft px-4 py-3" : "mr-8 rounded-2xl rounded-tl-md bg-paper px-4 py-3"}>
+                    <span className="block text-xs text-muted mb-1">
+                      {t.role === "candidate" ? "You" : info?.interviewer || "Interviewer"}{t.interrupted ? ", interrupted" : ""}
+                    </span>
+                    <span lang="hi">{t.text}</span>
+                  </li>
+                ))}
+                <li ref={transcriptEnd} aria-hidden />
+              </ol>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function Dots() {
+  return (
+    <span aria-hidden className="inline-flex gap-1 ml-2 align-middle">
+      {[0, 1, 2].map((i) => (
+        <motion.span key={i} className="h-1.5 w-1.5 rounded-full bg-white/60"
+          animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }} />
+      ))}
+    </span>
   );
 }

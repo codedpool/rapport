@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import PageHeader from "@/components/ui/PageHeader";
+import Tabs from "@/components/ui/Tabs";
 import SpecFields, { EMPTY_SPEC } from "@/components/SpecFields";
 
 const TYPE = { technical: "Technical", hr: "HR", mixed: "Mixed" };
@@ -27,14 +29,12 @@ export default function RecruiterDashboard() {
   useEffect(refresh, [refresh]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
-      <h1 className="display text-4xl sm:text-5xl">Hiring</h1>
-      <p className="mt-2 text-ink-2">Build an interview once, invite candidates by email, and review scored results.</p>
-      <div className="seg mt-8" role="tablist">
-        {[["templates", "Templates"], ["invite", "Invite"], ["results", "Results"]].map(([k, l]) => (
-          <button key={k} aria-pressed={tab === k} onClick={() => { setTab(k); setEditing(null); }}>{l}</button>
-        ))}
-      </div>
+    <>
+    <PageHeader image="/images/team.jpg" title="Hiring"
+      subtitle="Build an interview once, invite candidates by email, and review scored transcripts." />
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+      <Tabs value={tab} onChange={(k) => { setTab(k); setEditing(null); }}
+        tabs={[["templates", "Templates"], ["invite", "Invite"], ["results", "Results"]]} />
       {error && <p className="mt-4 text-danger text-sm">{error}</p>}
 
       {tab === "templates" && (
@@ -56,8 +56,8 @@ export default function RecruiterDashboard() {
                 <div>
                   <div className="text-lg font-semibold">{t.name}</div>
                   <div className="text-sm text-muted">
-                    {t.role} · {TYPE[t.interview_type]} · {t.duration_min} min · {LANG[t.language]}
-                    {t.pressure_mode ? " · pressure" : ""}{t.deep_followups ? " · follow-ups" : ""}
+                    {[t.role, TYPE[t.interview_type], `${t.duration_min} min`, LANG[t.language],
+                      t.pressure_mode && "pressure mode", t.deep_followups && "follow-ups"].filter(Boolean).join(", ")}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -80,6 +80,7 @@ export default function RecruiterDashboard() {
 
       {tab === "results" && <ResultsTable assignments={assignments} refresh={refresh} onError={setError} />}
     </div>
+    </>
   );
 }
 
