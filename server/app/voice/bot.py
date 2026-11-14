@@ -52,7 +52,7 @@ from ..gnani import LANG, make_stt, make_tts, tts_voice
 from ..interview import feedback as fb
 from ..interview import records
 from ..interview.prompts import KICKOFF, LANGUAGE_NAME, TIME_UP, TIME_WARNING, system_prompt
-from ..llm import LLMError, base_url
+from ..llm import LLMError, base_url, extra_body
 from ..sessions import LiveSession
 from .filters import InterviewerTextFilter, clean_for_speech
 from .serializer import IN_RATE, OUT_RATE, RapportSerializer
@@ -186,6 +186,7 @@ async def run_interview(ws: WebSocket, session: LiveSession) -> None:
         api_key=keys.llm.get(), base_url=base_url(keys.llm_provider),
         settings=OpenAILLMService.Settings(
             model=keys.llm_model, temperature=0.7,
+            extra={"extra_body": extra_body(keys.llm_provider)} if extra_body(keys.llm_provider) else {},
             system_instruction=system_prompt(spec, session.questions, interviewer),
         ),
     )

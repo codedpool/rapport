@@ -33,6 +33,12 @@ class LLMError(Exception):
         self.auth = auth
 
 
+def extra_body(provider: str) -> dict:
+    """Provider-specific request fields. OpenRouter's free models reason before
+    answering; low effort keeps replies fast and leaves room for the answer."""
+    return {"reasoning": {"effort": "low"}} if provider == "openrouter" else {}
+
+
 def base_url(provider: str) -> str:
     return PROVIDERS[provider]["base_url"]
 
@@ -85,6 +91,7 @@ async def chat_json(
         "temperature": temperature,
         "max_tokens": max_tokens,
         "response_format": {"type": "json_object"},
+        **extra_body(provider),
     }
     last = "The LLM did not respond."
     for attempt in range(3):
@@ -116,12 +123,18 @@ async def chat_json(
                 continue
             raise LLMError(f"The LLM request failed ({r.status_code}).")
         try:
-            text = r.json()["choices"][0]["message"]["content"] or ""
+            choice = r.json()["choices"][0]
+            text = choice["message"]["content"] or ""
         except (KeyError, IndexError, ValueError, TypeError):
             last = "The LLM returned an unexpected response."
             continue
         parsed = _extract_json(text)
         if parsed is not None:
             return parsed
+        if choice.get("finish_reason") == "length":
+            # Reasoning models can spend the whole budget thinking; give them more room.
+            body["max_tokens"] = min(body["max_tokens"] * 2, 12000)
+            last = "The LLM ran out of room before finishing."
+            continue
         last = "The LLM returned malformed JSON."
     raise LLMError(redact(last))

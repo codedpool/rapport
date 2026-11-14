@@ -143,5 +143,5 @@ async def generate(spec: dict, transcript: list[dict], *, provider: str, key: st
             "scores": None, "overall": None, "strengths": [], "improvements": [], "examples": [],
             "language_note": "", "quotes_removed": 0,
         }
-    raw = await chat_json(provider, key, model, _messages(spec, transcript), temperature=0.3)
+    raw = await chat_json(provider, key, model, _messages(spec, transcript), temperature=0.3, max_tokens=5000, timeout=90)
     return _clean(raw, transcript)

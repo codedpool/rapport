@@ -76,7 +76,7 @@ async def create_session(body: SessionCreate, request: Request, user: User | Non
     model = llm.resolve_model(k.llm_provider, k.llm_model)
     try:
         plan = await llm.chat_json(k.llm_provider, k.llm_api_key, model, questions_messages(spec),
-                                   temperature=0.8, max_tokens=800, timeout=40)
+                                   temperature=0.8, max_tokens=2000, timeout=45)
     except llm.LLMError as e:
         raise HTTPException(400 if e.auth else 502, str(e))
     questions = [str(q).strip()[:300] for q in (plan.get("questions") or []) if str(q).strip()][:6]
