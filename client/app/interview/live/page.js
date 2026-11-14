@@ -37,6 +37,7 @@ export default function LivePage() {
   const videoRef = useRef(null);
   const orbRef = useRef(null);
   const startRef = useRef(0);
+  const endingRef = useRef(false);
   const transcriptEnd = useRef(null);
 
   // Connect once (the timeout absorbs React's development double-mount).
@@ -108,6 +109,7 @@ export default function LivePage() {
             setLanguage(e.language);
             break;
           case "status":
+            endingRef.current = true;
             if (e.status === "ending") setPhase("ending");
             if (e.status === "processing") setPhase("processing");
             break;
@@ -128,7 +130,14 @@ export default function LivePage() {
       };
       ws.onclose = () => {
         micRef.current?.stop();
-        if (!cancelled) setPhase((p) => (p === "live" || p === "connecting" ? "error" : p));
+        if (cancelled) return;
+        // The voice pipeline closes the socket when the interview ends; feedback is
+        // still being written server-side, and the results page waits for it.
+        if (endingRef.current) {
+          router.replace(`/results/${live.interview_id}`);
+          return;
+        }
+        setPhase((p) => (p === "live" || p === "connecting" ? "error" : p));
         setError((m) => m || "The connection closed.");
       };
     }, 0);
@@ -181,6 +190,7 @@ export default function LivePage() {
   }, [turns]);
 
   const end = () => {
+    endingRef.current = true;
     if (wsRef.current?.readyState === 1) wsRef.current.send(JSON.stringify({ type: "end" }));
     setPhase("ending");
   };
