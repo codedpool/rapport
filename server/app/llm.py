@@ -16,7 +16,7 @@ from .security import redact
 PROVIDERS = {
     "openrouter": {
         "base_url": "https://openrouter.ai/api/v1",
-        "default_model": "google/gemini-2.5-flash",
+        "default_model": "nvidia/nemotron-3.5-super-vl:free",  # free tier; tools + JSON verified
     },
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",

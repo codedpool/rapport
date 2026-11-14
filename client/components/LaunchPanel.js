@@ -169,7 +169,7 @@ export default function LaunchPanel({ mode = "mock", spec, assignmentId }) {
                 <div>
                   <label className="field-label" htmlFor="model">Model <span className="font-normal text-muted">(optional)</span></label>
                   <input id="model" className="field font-mono text-sm" value={keys.llm_model}
-                    onChange={(e) => setKeys({ ...keys, llm_model: e.target.value })} placeholder="Use the default" />
+                    onChange={(e) => setKeys({ ...keys, llm_model: e.target.value })} placeholder={keys.llm_provider === "openrouter" ? "nvidia/nemotron-3.5-super-vl:free" : "gemini-3.5-flash-lite"} />
                 </div>
               </div>
             </motion.div>
