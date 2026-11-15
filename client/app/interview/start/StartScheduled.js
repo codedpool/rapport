@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { FileText } from "lucide-react";
 import { api } from "@/lib/api";
 import LaunchPanel from "@/components/LaunchPanel";
 
@@ -9,10 +11,14 @@ const LANG = { en: "English", hi: "Hindi", hinglish: "Hinglish" };
 
 export default function StartScheduled({ assignmentId }) {
   const [a, setA] = useState(undefined);
+  const [resume, setResume] = useState(undefined); // the default resume the server will use, or null
   useEffect(() => {
     api("my-assignments")
       .then((d) => setA(d.assignments.find((x) => x.id === assignmentId) || null))
       .catch(() => setA(null));
+    api("resumes")
+      .then((d) => setResume(d.resumes.find((r) => r.id === d.default_id) || null))
+      .catch(() => setResume(undefined));
   }, [assignmentId]);
 
   if (a === undefined) return <div className="mx-auto max-w-5xl px-4 py-24 text-muted">Loading…</div>;
@@ -36,6 +42,21 @@ export default function StartScheduled({ assignmentId }) {
           <li>Find a quiet spot. Headphones help.</li>
           <li>You get one attempt. Results are shared when the recruiter releases them.</li>
         </ul>
+        {resume !== undefined && (
+          <div className="mt-6 rounded-2xl border border-line bg-white p-4 flex items-start gap-3">
+            <FileText size={18} className="mt-0.5 shrink-0 text-violet" aria-hidden />
+            <p className="text-sm text-ink-2">
+              {resume ? (
+                <>The interviewer will use your default resume, <span className="font-medium text-ink">{resume.label}</span>, to ask about your real work.</>
+              ) : (
+                <>No resume saved. Add one and the interviewer will ask about your real projects.</>
+              )}{" "}
+              <Link href="/account#resumes" className="text-accent underline underline-offset-4 whitespace-nowrap">
+                {resume ? "Change default" : "Add a resume"}
+              </Link>
+            </p>
+          </div>
+        )}
       </section>
       <section className="card p-6 sm:p-8">
         <LaunchPanel mode="scheduled" assignmentId={a.id} />
