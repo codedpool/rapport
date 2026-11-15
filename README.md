@@ -4,12 +4,14 @@ A multilingual voice interview platform. Have a spoken interview in Hindi, Engli
 
 The idea in one line: you stay in the language you think in, and the interview judges what you say, not how English it sounds.
 
-Built for the Gnani AI Voice AI Challenge.
+Built for the Gnani AI Voice AI Challenge. **One-page pitch: [PITCH.md](PITCH.md)**
 
 ## What it does
 
 **Candidates**
 - Practice interviews built from any role and job description, as many as you like
+- Upload a resume (read in the browser, contact details removed); the interviewer asks about your real projects and results. Keep several named resumes, set a default, and pick one per interview
+- Optionally write the questions you want to be asked
 - Technical, HR or mixed interviews, 5, 8 or 12 minutes
 - Deep follow-ups (at most two in a row) and an optional pressure mode
 - Answer in Hindi, English or any mix; switch the interviewer's language mid-interview
@@ -18,7 +20,8 @@ Built for the Gnani AI Voice AI Challenge.
 - Turn-by-turn transcript; guest results can be saved to an account after signing in
 
 **Recruiters**
-- Interview templates: role, job description, resume highlights, type, length, language, pressure mode, follow-ups, key terms
+- Interview templates: role, job description, your own questions (asked in order, with live follow-ups), type, length, language, pressure mode, follow-ups, key terms
+- Scheduled interviews use the candidate's default resume, if they saved one
 - Invite candidates by pasting a list of emails
 - Track status, review transcripts and scores
 - Results stay hidden from candidates until you release them
