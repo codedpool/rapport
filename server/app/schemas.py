@@ -67,11 +67,60 @@ class Keys(_Strict):
     llm_model: str | None = Field(default=None, pattern=MODEL_PATTERN)
 
 
+def _clean_list(v: list[str], n: int, size: int) -> list[str]:
+    out = []
+    for t in v or []:
+        t = " ".join(str(t).split())[:size]
+        if t and t not in out:
+            out.append(t)
+    return out[:n]
+
+
+class ResumeProject(_Strict):
+    title: str = Field(default="", max_length=120)
+    detail: str = Field(default="", max_length=320)
+
+
+class ResumeProfile(_Strict):
+    """The short, reviewed summary of a resume. The file and full text are never stored."""
+
+    file_name: str = Field(default="", max_length=120)
+    roles: list[str] = Field(default_factory=list)
+    projects: list[ResumeProject] = Field(default_factory=list)
+    skills: list[str] = Field(default_factory=list)
+    numbers: list[str] = Field(default_factory=list)
+
+    @field_validator("roles")
+    @classmethod
+    def _roles(cls, v): return _clean_list(v, 5, 140)
+
+    @field_validator("skills")
+    @classmethod
+    def _skills(cls, v): return _clean_list(v, 25, 40)
+
+    @field_validator("numbers")
+    @classmethod
+    def _numbers(cls, v): return _clean_list(v, 6, 140)
+
+    @field_validator("projects")
+    @classmethod
+    def _projects(cls, v): return [p for p in v if p.title.strip() or p.detail.strip()][:4]
+
+
+class ResumeParseIn(_Strict):
+    text: str = Field(min_length=1, max_length=20000)
+    file_name: str = Field(default="", max_length=120)
+    llm_provider: LLMProvider = "groq"
+    llm_api_key: str = Field(min_length=8, max_length=300)
+    llm_model: str | None = Field(default=None, pattern=MODEL_PATTERN)
+
+
 class SessionCreate(_Strict):
     mode: Literal["mock", "scheduled"] = "mock"
     spec: InterviewSpec | None = None  # required for mock
     assignment_id: str | None = Field(default=None, max_length=64)  # required for scheduled
     keys: Keys
+    resume: ResumeProfile | None = None  # practice interviews; scheduled ones use the saved resume
     voice: str = DEFAULT_VOICE
     voice_engine: VoiceEngine = "expressive"
     barge_in: bool = False  # True when the candidate wears headphones

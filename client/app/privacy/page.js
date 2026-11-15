@@ -4,6 +4,7 @@ const rows = [
   ["Your Gnani and LLM API keys", "Held in server memory for one interview, then dropped", "Never written to a database, logs, analytics or error reports. Each session only sees its own key."],
   ["Your voice", "Streamed to Gnani for live transcription", "Rapport does not record or store audio."],
   ["Camera", "Preview on your screen only", "Video never leaves your browser."],
+  ["Your resume", "Read in your browser. Contact details are removed, then your LLM provider makes a short summary", "The file and full text are never stored. If you choose to save it, only the reviewed summary is kept, on your account or in this browser, until you replace it, forget it or delete your data."],
   ["Transcript, scores, feedback", "Saved in Rapport's database", "Guest interviews expire after 48 hours unless you sign in and save them. Signed-in interviews stay until you delete them."],
   ["Transcript sent to your LLM", "Groq, OpenRouter or Google Gemini, using your key", "Used to run the interview and write feedback, under that provider's terms."],
   ["Google profile (name, email, picture)", "Auth0 sign-in, and Rapport's database", "Rapport's copy is deleted with 'Delete my data'. Auth0 keeps the Google sign-in record under its own terms."],

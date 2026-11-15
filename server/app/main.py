@@ -16,7 +16,7 @@ setup_logging(settings.log_level)
 
 from . import db  # noqa: E402
 from .interview import records  # noqa: E402
-from .routes import account, interviews, recruiter, sessions  # noqa: E402
+from .routes import account, interviews, recruiter, resume, sessions  # noqa: E402
 from .sessions import store  # noqa: E402
 
 MAX_BODY = 64 * 1024
@@ -89,3 +89,4 @@ app.include_router(sessions.router)
 app.include_router(interviews.router)
 app.include_router(recruiter.router)
 app.include_router(account.router)
+app.include_router(resume.router)

@@ -11,6 +11,7 @@ from ..auth import User, optional_user
 from ..config import settings
 from ..interview import records
 from ..interview.prompts import questions_messages
+from ..interview.resume import merge_into_spec
 from ..net import client_ip
 from ..schemas import SessionCreate
 from ..security import Secret, new_token
@@ -56,10 +57,14 @@ async def create_session(body: SessionCreate, request: Request, user: User | Non
         spec, assignment = await _assignment_spec(body.assignment_id, user)
         if user:
             await db.upsert_user(user)
+            saved = await db.db().users.find_one({"_id": user.sub}, {"resume": 1})
+            spec = merge_into_spec(spec, (saved or {}).get("resume"))
     else:
         if not body.spec:
             raise HTTPException(422, "Interview details are required.")
         spec = body.spec.model_dump()
+        if body.resume:
+            spec = merge_into_spec(spec, body.resume.model_dump())
 
     k = body.keys
     results = await asyncio.gather(

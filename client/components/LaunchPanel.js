@@ -33,6 +33,11 @@ const PROVIDERS = [
   },
 ];
 
+function stripResume(r) {
+  const { file_name = "", roles = [], projects = [], skills = [], numbers = [] } = r;
+  return { file_name, roles, projects, skills, numbers };
+}
+
 function SecretField({ id, label, value, onChange, placeholder }) {
   const [show, setShow] = useState(false);
   return (
@@ -50,9 +55,14 @@ function SecretField({ id, label, value, onChange, placeholder }) {
   );
 }
 
-export default function LaunchPanel({ mode = "mock", spec, assignmentId }) {
+export const DEFAULT_KEYS = { gnani_api_key: "", llm_provider: "groq", llm_api_key: "", llm_model: "" };
+
+// keys/setKeys may be owned by the parent (the practice wizard shares them with the resume card).
+export default function LaunchPanel({ mode = "mock", spec, assignmentId, keys: keysProp, setKeys: setKeysProp, resume = null }) {
   const router = useRouter();
-  const [keys, setKeys] = useState({ gnani_api_key: "", llm_provider: "groq", llm_api_key: "", llm_model: "" });
+  const [ownKeys, setOwnKeys] = useState(DEFAULT_KEYS);
+  const keys = keysProp ?? ownKeys;
+  const setKeys = setKeysProp ?? setOwnKeys;
   const [remember, setRemember] = useState(false);
   const [voice, setVoice] = useState("Shivani");
   const [engine, setEngine] = useState("expressive");
@@ -63,14 +73,13 @@ export default function LaunchPanel({ mode = "mock", spec, assignmentId }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // Tab storage is only readable after mount; reading it during render would break hydration.
     const saved = loadKeys();
-    if (saved) {
-      // Tab storage is only readable after mount; reading it during render would break hydration.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setKeys((k) => ({ ...k, ...saved, llm_model: saved.llm_model || "" }));
-      setRemember(true);
-    }
-  }, []);
+    if (!saved) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRemember(true);
+    if (!keysProp) setOwnKeys((k) => ({ ...k, ...saved, llm_model: saved.llm_model || "" }));
+  }, [keysProp]);
 
   const provider = PROVIDERS.find((p) => p.id === keys.llm_provider);
 
@@ -100,6 +109,7 @@ export default function LaunchPanel({ mode = "mock", spec, assignmentId }) {
         method: "POST",
         body: {
           mode, spec: mode === "mock" ? spec : null, assignment_id: assignmentId || null,
+          resume: mode === "mock" && resume ? stripResume(resume) : null,
           keys: cleanKeys, voice, voice_engine: engine, barge_in: headphones, consent: true,
         },
       });

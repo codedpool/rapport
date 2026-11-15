@@ -144,11 +144,12 @@ def _retry_after(r: httpx.Response) -> float:
 async def chat_json(
     provider: str, key: str, model: str | None, messages: list[dict], *,
     temperature: float = 0.6, max_tokens: int = 2500, timeout: float = 60, max_wait: float = 45,
+    chain: list[str] | None = None,
 ) -> dict:
     """One JSON completion. Walks the model chain on rate limits, overloads, outages,
     truncation and malformed output; waits out a full-chain rate limit up to max_wait."""
     url = base_url(provider).rstrip("/") + "/chat/completions"
-    chain = model_chain(provider, model)
+    chain = chain or model_chain(provider, model)
     budget = request_budget(provider)
     prompt_tokens = estimate_tokens(messages)
     # Leave the reply whatever fits in the per-request budget, within sensible bounds.

@@ -40,6 +40,15 @@ def _context_block(spec: dict) -> str:
     return "\n".join(parts)
 
 
+RESUME_FOLLOWUP = """
+When it fits, tie follow-ups to the candidate's resume: ask what they personally did in a listed
+project, or how they achieved a listed result. Never read the resume back to them."""
+
+RESUME_RULE = """
+- At least two questions must ask about specific items from the candidate's resume highlights,
+  naming them (a project, a role or a result), e.g. "You cut p99 latency at your last job. How?"."""
+
+
 def questions_messages(spec: dict) -> list[dict]:
     n = question_count(spec["duration_min"])
     return [
@@ -54,7 +63,7 @@ Rules:
 - Each question is short and spoken: at most 2 sentences, 3 to 15 seconds aloud.
 - The first question is a friendly, specific opener. Do not use "Tell me about yourself" verbatim.
 - {TYPE_GUIDE[spec['interview_type']]}
-- Each question stands alone; the interviewer follows up live.
+- Each question stands alone; the interviewer follows up live.{RESUME_RULE if spec.get("has_resume") else ""}
 - Write them in plain English, no numbering or markdown.
 
 Return JSON only: {{"questions": ["...", "..."]}}"""},
@@ -100,7 +109,7 @@ INTERVIEW PLAN (ask in order, rephrased naturally in the interview language)
 {plan}
 
 {followups}
-{pressure}
+{pressure}{RESUME_FOLLOWUP if spec.get("has_resume") else ""}
 
 OPENING: Greet the candidate, introduce yourself by name in one sentence, say this is a short {TYPE_LABEL[spec['interview_type']]} interview for {spec['role']}, then ask the first question.
 

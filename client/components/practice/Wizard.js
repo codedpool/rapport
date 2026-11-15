@@ -1,12 +1,14 @@
 "use client";
 
 import useReducedMotionSafe from "@/lib/useReducedMotionSafe";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronDown, ChevronLeft } from "lucide-react";
 import { DURATIONS, EMPTY_SPEC, TYPES } from "@/components/SpecFields";
-import LaunchPanel from "@/components/LaunchPanel";
+import LaunchPanel, { DEFAULT_KEYS } from "@/components/LaunchPanel";
+import ResumeCard from "@/components/practice/ResumeCard";
+import { loadKeys } from "@/lib/api";
 import Segmented from "@/components/ui/Segmented";
 import Switch from "@/components/ui/Switch";
 
@@ -29,6 +31,14 @@ export default function Wizard() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [spec, setSpec] = useState(EMPTY_SPEC);
+  const [keys, setKeys] = useState(DEFAULT_KEYS);
+  const [resume, setResume] = useState(null);
+  useEffect(() => {
+    const saved = loadKeys();
+    // Tab storage is only readable after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (saved) setKeys((k) => ({ ...k, ...saved, llm_model: saved.llm_model || "" }));
+  }, []);
   const [error, setError] = useState("");
   const set = (k) => (v) => setSpec((s) => ({ ...s, [k]: v }));
 
@@ -79,15 +89,21 @@ export default function Wizard() {
         <div className="mt-8 relative">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={step} {...slide}>
-              {step === 0 && <RoleStep spec={spec} set={set} onNext={() => go(1)} />}
+              {step === 0 && (
+                <>
+                  <RoleStep spec={spec} set={set} onNext={() => go(1)} />
+                  <ResumeCard value={resume} onChange={setResume} keys={keys} setKeys={setKeys} />
+                </>
+              )}
               {step === 1 && <StyleStep spec={spec} set={set} />}
               {step === 2 && (
                 <div>
                   <h1 className="display display-tight text-4xl sm:text-5xl text-accent">Connect and start</h1>
                   <p className="mt-3 text-lg text-ink-2">
-                    {spec.role}, {spec.duration_min} minutes, {LANGS.find((l) => l.id === spec.language)?.name}.
+                    {spec.role}, {spec.duration_min} minutes, {LANGS.find((l) => l.id === spec.language)?.name}
+                    {resume ? ", with questions from your resume." : "."}
                   </p>
-                  <div className="mt-8"><LaunchPanel mode="mock" spec={spec} /></div>
+                  <div className="mt-8"><LaunchPanel mode="mock" spec={spec} keys={keys} setKeys={setKeys} resume={resume} /></div>
                 </div>
               )}
             </motion.div>

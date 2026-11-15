@@ -5,5 +5,5 @@ export async function proxy(request) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|worklets/).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|worklets/|vendor/).*)"],
 };
