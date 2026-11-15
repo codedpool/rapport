@@ -36,9 +36,15 @@ Hiring teams run the whole first round for a large pool of candidates. They buil
 - **Timbre v3.0 expressive TTS** gives the interviewer natural pauses and breath, so it sounds like a person, not a phone menu.
 - **Natural turn-taking** uses Pipecat with voice activity detection and smart-turn detection. On Groq, the first reply comes in about 1.2 s, with about 1.7 s between turns. A three-model fallback means token limits never cut an interview short.
 
-## Trust
+## Try it yourself: bring your own key
 
-You bring your own keys; they're held in memory only. No audio is stored. Every record is owner-scoped. One click deletes everything.
+Rapport is deliberately **BYOK (bring your own key)**, so anyone can try the full product today, not just watch a demo.
+
+- Get a Gnani key at **app.gnani.ai**. Gnani gives **5,000 free API credits** to start.
+- Get a free Groq key at **console.groq.com**.
+- Paste both in and start interviewing.
+
+Your keys are held in memory only for that interview and are never stored. No audio is kept, every record is owner-scoped, and one click deletes everything.
 
 ## Who it serves
 
