@@ -1,8 +1,9 @@
 "use client";
 
+import useReducedMotionSafe from "@/lib/useReducedMotionSafe";
 import { useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronDown, ChevronLeft } from "lucide-react";
 import { DURATIONS, EMPTY_SPEC, TYPES } from "@/components/SpecFields";
 import LaunchPanel from "@/components/LaunchPanel";
@@ -24,7 +25,7 @@ const LANGS = [
 ];
 
 export default function Wizard() {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [spec, setSpec] = useState(EMPTY_SPEC);

@@ -1,10 +1,11 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import useReducedMotionSafe from "@/lib/useReducedMotionSafe";
+import { motion } from "motion/react";
 
 // Overall score out of 10, drawn as a ring that fills once on load.
 export default function ScoreRing({ value, size = 132 }) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const r = size / 2 - 9;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(1, (value || 0) / 10));

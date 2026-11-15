@@ -1,13 +1,14 @@
 "use client";
 
+import useReducedMotionSafe from "@/lib/useReducedMotionSafe";
 import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { AudioLines, BadgeCheck, Check, Pause, Square, Sparkles, Timer } from "lucide-react";
 import Logo from "@/components/Logo";
 
 // Orange voice orb with live waveform bars.
 export function VoiceOrb({ size = 128 }) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const bars = [0.35, 0.6, 0.9, 0.55, 1, 0.7, 0.45, 0.8, 0.5];
   return (
     <div className="relative grid place-items-center" style={{ width: size, height: size }}>
@@ -48,7 +49,7 @@ function MockFrame({ children, label }) {
 }
 
 function Typing({ text, speed = 45 }) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const [n, setN] = useState(reduce ? text.length : 0);
   useEffect(() => {
     if (reduce) return;
@@ -112,7 +113,7 @@ export function SpeakScreen() {
 }
 
 export function FeedbackScreen() {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const rows = [["Clarity", 4], ["Specificity", 4], ["Confidence", 3], ["Structure", 3]];
   return (
     <MockFrame label="Your scorecard">
@@ -142,7 +143,7 @@ export function FeedbackScreen() {
 }
 
 export function MiniRing({ value, size = 112 }) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const r = size / 2 - 8;
   const c = 2 * Math.PI * r;
   return (

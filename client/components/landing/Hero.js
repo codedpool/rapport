@@ -1,19 +1,20 @@
 "use client";
 
+import useReducedMotionSafe from "@/lib/useReducedMotionSafe";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { ArrowRight } from "lucide-react";
 
 export default function Hero() {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const { scrollY } = useScroll();
   // Gentle parallax: the painting drifts slower than the page.
   const y = useTransform(scrollY, [0, 800], [0, reduce ? 0 : 140]);
   const fade = useTransform(scrollY, [0, 500], [1, reduce ? 1 : 0.2]);
 
-  const rise = (d) =>
-    reduce ? {} : { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.9, delay: d, ease: [0.22, 1, 0.36, 1] } };
+  // Constant props: MotionConfig (reducedMotion="user") turns the movement off when asked.
+  const rise = (d) => ({ initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.9, delay: d, ease: [0.22, 1, 0.36, 1] } });
 
   return (
     <section className="relative h-[100svh] min-h-[640px] overflow-hidden bg-[#3b2a4a]">

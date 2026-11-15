@@ -1,7 +1,8 @@
 "use client";
 
+import useReducedMotionSafe from "@/lib/useReducedMotionSafe";
 import { useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { BarChart3, Mic, MousePointerClick } from "lucide-react";
 import { ChooseScreen, FeedbackScreen, SpeakScreen } from "./MockScreens";
 
@@ -29,7 +30,7 @@ function StepItem({ step, i, active, onClick }) {
 
 export default function HowItWorks() {
   const ref = useRef(null);
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const [active, setActive] = useState(0);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   useMotionValueEvent(scrollYProgress, "change", (v) => setActive(Math.min(2, Math.floor(v * 3))));

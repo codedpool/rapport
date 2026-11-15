@@ -1,11 +1,10 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 
 // Used once, for the feedback preview: the one element below the fold worth drawing attention to.
+// MotionConfig (reducedMotion="user") drops the movement for visitors who ask for less motion.
 export default function Reveal({ children, className }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
   return (
     <motion.div
       className={className}
