@@ -69,6 +69,8 @@ It is one platform for AI interviews and hiring, and it judges <i>what you say</
 - **Gnani Timbre v3.0, expressive text-to-speech.** It gives the interviewer natural pauses and breath, so it sounds like a person, not a phone menu.
 - **Real-time turn-taking.** Pipecat, voice activity detection and smart-turn give a first reply in about **1.2 s** and about **1.7 s** between turns on Groq. A three-model fallback means token limits never cut an interview short, and a silent turn is retried automatically.
 
+*Why only three languages? Gnani supports many more Indian languages, and I'm sure its team has done remarkable work on them. I chose to ship only the languages I speak and could verify myself, rather than release ones I couldn't check.*
+
 ## Try it in two minutes: bring your own key
 
 Rapport is deliberately **BYOK (bring your own key)**, so anyone can try the full product, not just watch a demo.

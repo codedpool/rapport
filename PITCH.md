@@ -36,6 +36,8 @@ Hiring teams run the whole first round for a large pool of candidates. They buil
 - **Timbre v3.0 expressive TTS** gives the interviewer natural pauses and breath, so it sounds like a person, not a phone menu.
 - **Natural turn-taking** uses Pipecat with voice activity detection and smart-turn detection. On Groq, the first reply comes in about 1.2 s, with about 1.7 s between turns. A three-model fallback means token limits never cut an interview short.
 
+*Why only three languages? Gnani supports many more Indian languages, and I'm sure its team has done remarkable work on them. I chose to ship only the languages I speak and could verify myself, rather than release ones I couldn't check.*
+
 ## Try it yourself: bring your own key
 
 Rapport is deliberately **BYOK (bring your own key)**, so anyone can try the full product today, not just watch a demo.
