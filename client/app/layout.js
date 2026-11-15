@@ -2,6 +2,7 @@ import { Anek_Devanagari, Fraunces, Outfit } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import MotionProvider from "@/components/MotionProvider";
+import BackendStatus from "@/components/BackendStatus";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
           <Nav />
           <main className="flex-1">{children}</main>
           <Footer />
+          <BackendStatus />
         </MotionProvider>
       </body>
     </html>

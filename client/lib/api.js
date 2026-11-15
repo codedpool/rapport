@@ -23,6 +23,10 @@ export async function api(path, { method = "GET", body, guestToken } = {}) {
   } catch {
     throw new ApiError("Network error. Check your connection.", 0);
   }
+  // A sleeping API (free hosting) answers 502/503/504 until it wakes: let the status toast take over.
+  if ([502, 503, 504].includes(res.status) && typeof window !== "undefined") {
+    window.dispatchEvent(new Event("rapport:backend-down"));
+  }
   let data = null;
   try {
     data = await res.json();
