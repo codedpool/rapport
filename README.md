@@ -1,22 +1,52 @@
-# Rapport
+<p align="center">
+  <img src="docs/images/title.jpg" alt="Rapport: AI voice interviews in the language you think in" width="100%">
+</p>
 
-### Language is a bridge, not the measure of knowledge.
+<h1 align="center">Rapport</h1>
 
-Rapport is a real-time voice AI interviewer that speaks **Hindi, English and Hinglish**. It is one platform for AI interviews and hiring, and it judges what you say, not how English it sounds.
+<p align="center"><b>Language is a bridge, not the measure of knowledge.</b></p>
 
-Built on **Gnani AI's Prisma and Timbre** for the Great Indian AI Internship Challenge.
+<p align="center">
+A real-time voice AI interviewer that speaks <b>Hindi, English and Hinglish</b>.<br>
+It is one platform for AI interviews and hiring, and it judges <i>what you say</i>, not how English it sounds.
+</p>
 
-**[Try it live](https://rapport-tawny.vercel.app)** · **Watch the demo (2:50):** _link coming_ · **[One-page pitch](PITCH.md)**
+<p align="center">
+  <a href="https://rapport-tawny.vercel.app"><img alt="Try it live" src="https://img.shields.io/badge/Try%20it%20live-rapport--tawny.vercel.app-f07a2b?style=for-the-badge"></a>
+  <a href="PITCH.md"><img alt="One-page pitch" src="https://img.shields.io/badge/Read-the%20pitch-4a1a14?style=for-the-badge"></a>
+  <img alt="Built on Gnani AI" src="https://img.shields.io/badge/Built%20on-Gnani%20Prisma%20%2B%20Timbre-8a79e6?style=for-the-badge">
+</p>
 
-![A live Hinglish interview in Rapport](docs/images/interview.jpg)
+<p align="center"><b>Demo video (2:50):</b> <i>link coming</i></p>
 
-## Why Rapport exists
+---
 
-AI interviews have become the first round for millions of job seekers. They are fast and they scale, but they do not listen the way a person does. They transcribe English, score fluency, and treat accent as if it were competence.
+## The problem, in 30 seconds
 
-A good human interviewer follows the thought, asks what you meant, and decides whether you understand the work. The language is only how the idea travels.
+- **AI interviews are now the first round** for millions of job seekers. They are fast and they scale, but they don't listen like a person.
+- **They grade the bridge, not the thinking.** They score English fluency and treat accent as competence. A good human interviewer follows the thought and judges whether you understand the work.
+- **In India this decides careers.** English is our bridge to the world, and we need it. But only about **one in ten Indians speaks it** (Census 2011). Capable engineers, analysts and salespeople fail rounds they should pass.
+- **It also feels dismissive.** A flat, robotic interviewer tells candidates they didn't even deserve a person's attention.
 
-In India that difference decides careers. English is our bridge to the world, and we need it. But only about one in ten Indians speaks it (Census 2011). When an interview grades the bridge instead of what crosses it, capable people fail rounds they should pass. And a flat, robotic interviewer tells them they did not even deserve a person's attention. **Rapport is built so every candidate is truly heard: in their language, by a voice that feels human.**
+> **Rapport is built so every candidate is truly heard: in their own language, by a voice that feels human.**
+
+## Rapport vs. a typical AI interview
+
+| | Typical AI interview | **Rapport** |
+|---|---|---|
+| **Language** | English only | **Hindi, English or Hinglish**, and you can switch mid-interview |
+| **What's judged** | Fluency and accent | **Clarity and substance.** The same answers score **8.0 / 8.0 / 8.0** in all three languages |
+| **Voice** | Robotic, one-way | **Gnani Timbre**: a warm voice with natural pauses that you can interrupt |
+| **Questions** | Generic | **From your resume** (what you actually built) or **set by the hiring team** |
+| **When you're stuck** | Silence | It **nudges you**, using your own resume |
+| **Feedback** | A number | **Coaching**: the one thing to fix, and your weakest answers rewritten from your own words, with every quote verified |
+| **Hiring** | A separate tool | **One platform**: invite a large pool, review and shortlist, release results |
+| **Trying it** | Book a demo | **BYOK**: paste your own keys and use the full product today |
+
+<p align="center">
+  <img src="docs/images/interview.jpg" alt="A live Hinglish interview with dynamic captions" width="100%">
+  <br><i>A live Hinglish interview: the interviewer follows up on a vague answer, and the candidate answers with real numbers.</i>
+</p>
 
 ## One platform for hiring and AI interviews
 
@@ -25,23 +55,19 @@ In India that difference decides careers. English is our bridge to the world, an
 | Take a **mock interview** for any role, any time | Build an interview once with **your own questions** |
 | Or take an **interview set up by a hiring team**, right from your dashboard | **Invite a large pool** of candidates by email in one go |
 | Keep several resumes and pick one per interview | Every candidate gets the **same questions**, in the language they're comfortable in |
-| Get coaching, not just a score | Review every candidate's **scores and transcript** in one place to **shortlist** |
+| Get **coaching**, not just a score | Review every candidate's **scores and transcript** in one place to **shortlist** |
 | Answer in Hindi, English or Hinglish | **Release results** when you're ready |
 
-## What makes the interviewer different
+<p align="center">
+  <img src="docs/images/feedback.jpg" alt="The coaching report" width="100%">
+  <br><i>The report coaches you: the one thing to fix first, how the talking was split, and stronger versions of your own answers.</i>
+</p>
 
-- **It feels human.** Gnani's voice stack gives it a warm voice, natural pauses and real-time turn-taking. You can interrupt it, and when you're stuck it nudges you. Candidates feel heard, not processed.
-- **It asks about what you built.** It reads your resume in the browser, with contact details removed. It asks about your real projects and numbers, and follows up when an answer is vague.
-- **It judges clarity, not language.** You can switch its language mid-interview. Accent, grammar and code-mixing are never penalised. The same answers in English, Hindi and Hinglish score **8.0 / 8.0 / 8.0**.
-- **It coaches.** You get scores for clarity, specificity, confidence and structure, and the one thing to fix first. Your weakest answers are rewritten from your own words, and every quote is checked against the transcript.
+## Why it feels human: built on Gnani AI
 
-![The feedback report](docs/images/feedback.jpg)
-
-## Built on Gnani AI
-
-- **Gnani Prisma v3.0, realtime speech-to-text.** It runs in `codemix` mode, so English terms stay in Latin script and Hindi in Devanagari, exactly as Indians speak. Role keywords are passed as key terms.
-- **Gnani Timbre v3.0, expressive text-to-speech.** It gives the interviewer natural pauses and breaths. Timbre v2.5 is available as a faster voice engine.
-- **Pipecat pipeline.** It uses voice activity detection and smart-turn detection for natural turn-taking. On Groq, the first reply comes in about 1.2 s, with about 1.7 s between turns.
+- **Gnani Prisma v3.0, realtime speech-to-text.** It runs in `codemix` mode, so English terms stay in Latin script and Hindi in Devanagari, exactly as Indians speak.
+- **Gnani Timbre v3.0, expressive text-to-speech.** It gives the interviewer natural pauses and breath, so it sounds like a person, not a phone menu.
+- **Real-time turn-taking.** Pipecat, voice activity detection and smart-turn give a first reply in about **1.2 s** and about **1.7 s** between turns on Groq. A three-model fallback means token limits never cut an interview short, and a silent turn is retried automatically.
 
 ## Try it in two minutes: bring your own key
 
@@ -49,9 +75,9 @@ Rapport is deliberately **BYOK (bring your own key)**, so anyone can try the ful
 
 1. Get a Gnani API key at [app.gnani.ai/voice](https://app.gnani.ai/voice). Students registered for Gnani's Great Indian AI Internship Challenge get **5,000 free credits**.
 2. Get a free Groq key at [console.groq.com](https://console.groq.com). OpenRouter and Gemini work too.
-3. Open **[rapport-tawny.vercel.app](https://rapport-tawny.vercel.app)**, paste both keys and start interviewing. The backend runs on a free tier, so if it's asleep a toast tells you it's waking up. That takes about a minute.
+3. Open **[rapport-tawny.vercel.app](https://rapport-tawny.vercel.app)**, paste both keys and start interviewing.
 
-Your keys are held in memory for one interview and dropped when it ends. They are never written to the database, logs or error reports.
+Your keys are held in memory for one interview and never stored. The backend runs on a free tier. If it's asleep, a toast tells you it's waking up, which takes about a minute.
 
 ---
 
