@@ -4,7 +4,7 @@ A multilingual voice interview platform. Have a spoken interview in Hindi, Engli
 
 The idea in one line: you stay in the language you think in, and the interview judges what you say, not how English it sounds.
 
-Built for the Gnani AI Voice AI Challenge. **One-page pitch: [PITCH.md](PITCH.md)**
+Built for the Gnani AI Voice AI Challenge. **Live: https://rapport-tawny.vercel.app** · **One-page pitch: [PITCH.md](PITCH.md)**
 
 ## What it does
 
