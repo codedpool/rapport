@@ -17,7 +17,10 @@ It is one platform for AI interviews and hiring, and it judges <i>what you say</
   <img alt="Built on Gnani AI" src="https://img.shields.io/badge/Built%20on-Gnani%20Prisma%20%2B%20Timbre-8a79e6?style=for-the-badge">
 </p>
 
-<p align="center"><b>Demo video (2:50):</b> <i>link coming</i></p>
+<p align="center">
+  <a href="https://youtu.be/82hnE6z7Kh4"><img src="docs/images/demo-thumbnail.png" alt="Watch the 2:50 demo on YouTube" width="80%"></a>
+  <br><b><a href="https://youtu.be/82hnE6z7Kh4">▶ Watch the 2:50 demo</a></b>
+</p>
 
 ---
 

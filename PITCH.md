@@ -2,7 +2,7 @@
 
 ### Language is a bridge, not the measure of knowledge.
 
-**Live app:** https://rapport-tawny.vercel.app · **Demo (2:50):** _link_ · **Code:** https://github.com/codedpool/rapport
+**Live app:** https://rapport-tawny.vercel.app · **Demo (2:50):** https://youtu.be/82hnE6z7Kh4 · **Code:** https://github.com/codedpool/rapport
 
 ## The problem
 
