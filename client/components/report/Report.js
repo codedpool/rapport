@@ -1,234 +1,300 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "motion/react";
-import {
-  ArrowUpRight, BadgeCheck, Clock, Languages, Lightbulb, MessageCircle, MessagesSquare,
-  Sparkles, Target, TrendingUp, Type, Undo2,
-} from "lucide-react";
 import ScoreRing from "@/components/ui/ScoreRing";
-import { computeStats, fmtClock, fmtDuration, verdict } from "@/lib/reportStats";
+import { SWEET_SPOT, analyse, fmtClock, fmtDuration, oneThing, verdict } from "@/lib/reportStats";
 
-// Validated pair (dataviz validator, light surface): passes CVD, normal-vision and 3:1 contrast.
-const C_YOU = "#6c5ce0";
-const C_OTHER = "#e8601f";
+const YOU = "#6c5ce0"; // focus: the candidate
+const THEM = "#d6d0e4"; // context: the interviewer
 
-const DIMENSIONS = [
-  ["clarity", "Clarity", "Was each answer easy to follow?"],
-  ["specificity", "Specificity", "Concrete examples, names and numbers."],
-  ["confidence", "Confidence", "Conviction and ownership of the work. Not fluency or accent."],
-  ["structure", "Structure", "A clear arc: situation, what you did, the result."],
+const CHECKS = [
+  ["situation", "A real situation"],
+  ["you", "Your part, in “I”"],
+  ["number", "A number"],
+  ["reason", "The why"],
 ];
+const CHECK_NOUN = { situation: "a real situation", you: "your own part", number: "a number", reason: "the reason behind the choice" };
 
-function Section({ title, subtitle, children, className = "" }) {
+// ---------- the coach's note: the one thing to change ----------
+
+function CoachNote({ one }) {
   return (
-    <section className={`mt-10 ${className}`}>
-      <h2 className="display display-tight text-2xl sm:text-[1.75rem] text-accent">{title}</h2>
-      {subtitle && <p className="mt-1 text-ink-2">{subtitle}</p>}
-      <div className="mt-5">{children}</div>
+    <section className="rounded-[1.75rem] bg-cream border border-[#f1e6da] px-6 sm:px-10 py-8 sm:py-10">
+      <p className="text-ink-2">If you change one thing before your next interview</p>
+      <h2 className="display mt-3 text-[2.1rem] sm:text-[2.9rem] leading-[1.08] text-accent max-w-3xl">{one.headline}</h2>
+      {one.why && <p className="mt-4 text-lg text-ink-2 leading-relaxed max-w-2xl">{one.why}</p>}
+      {one.tryThis && (
+        <div className="mt-7 grid md:grid-cols-2 gap-x-10 gap-y-5 max-w-4xl">
+          <div>
+            <p className="text-sm text-muted">You said</p>
+            <p className="mt-1.5 text-lg text-ink-2 leading-relaxed line-through decoration-[#c9bfd9] decoration-1" lang="hi">{one.tryThis.before}</p>
+          </div>
+          <div>
+            <p className="text-sm text-sage font-medium">Try saying</p>
+            <p className="mt-1.5 text-lg text-ink leading-relaxed" lang="hi">{one.tryThis.after}</p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
 
-function Quote({ text }) {
-  if (!text) return null;
+// ---------- score, kept deliberately quieter than the advice ----------
+
+function ScoreLine({ feedback }) {
+  const dims = [["clarity", "Clarity"], ["specificity", "Specificity"], ["confidence", "Confidence"], ["structure", "Structure"]];
   return (
-    <blockquote className="mt-3 flex items-start gap-2 rounded-xl bg-paper px-3.5 py-2.5 text-ink-2" lang="hi">
-      <BadgeCheck size={17} className="mt-0.5 shrink-0 text-sage" aria-label="Matches your words exactly" />
-      <span>“{text}”</span>
-    </blockquote>
+    <section className="mt-12 grid md:grid-cols-[auto_1fr] gap-x-10 gap-y-6 items-start">
+      <div className="flex md:flex-col items-center gap-4">
+        <ScoreRing value={feedback.overall} size={128} />
+        <span className="text-ink font-medium">{verdict(feedback.overall)}</span>
+      </div>
+      <div>
+        <p className="text-xl leading-relaxed text-ink max-w-3xl">{feedback.summary}</p>
+        <dl className="mt-6 grid sm:grid-cols-2 gap-x-10 gap-y-3 max-w-3xl">
+          {dims.map(([k, label]) => {
+            const v = feedback.scores?.[k] || 1;
+            return (
+              <div key={k} className="grid grid-cols-[6.5rem_1fr_2rem] items-center gap-3">
+                <dt className="text-ink-2">{label}</dt>
+                <dd className="flex gap-[2px]" aria-label={`${label} ${v} out of 5`}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <span key={n} className="h-2 flex-1 first:rounded-l-full last:rounded-r-full" style={{ background: n <= v ? YOU : "var(--paper-2)" }} />
+                  ))}
+                </dd>
+                <span className="text-right tabular-nums text-ink">{v}/5</span>
+              </div>
+            );
+          })}
+        </dl>
+        {feedback.language_note && <p className="mt-5 text-sm text-muted max-w-3xl">{feedback.language_note}</p>}
+      </div>
+    </section>
   );
 }
 
-function StatTile({ icon: Icon, label, value, note }) {
+// ---------- figures ----------
+
+function Figure({ title, lede, children }) {
   return (
-    <div className="card p-5">
-      <div className="flex items-center gap-2 text-muted text-[0.92rem]">
-        <Icon size={16} aria-hidden /> {label}
-      </div>
-      <div className="mt-2 display text-[2rem] leading-none text-ink">{value}</div>
-      {note && <div className="mt-2 text-sm text-muted">{note}</div>}
+    <section className="mt-16">
+      <h3 className="display display-tight text-[1.65rem] sm:text-[2rem] text-accent max-w-3xl">{title}</h3>
+      {lede && <p className="mt-2 text-ink-2 max-w-2xl leading-relaxed">{lede}</p>}
+      <div className="mt-6 rounded-[1.5rem] bg-white border border-line p-5 sm:p-7 overflow-hidden">{children}</div>
+    </section>
+  );
+}
+
+function Legend({ items }) {
+  return (
+    <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-2">
+      {items.map(([label, color, hollow]) => (
+        <span key={label} className="flex items-center gap-1.5">
+          <span className={hollow ? "h-2.5 w-4 rounded-sm" : "h-2.5 w-2.5 rounded-full"}
+            style={hollow ? { background: "var(--sage-soft)", boxShadow: `inset 0 0 0 1px ${color}` } : { background: color }} aria-hidden />
+          {label}
+        </span>
+      ))}
     </div>
   );
 }
 
-// Two-part bar: 2px surface gap, rounded outer ends, legend with values in ink.
-function SplitBar({ title, a, b, note }) {
-  const pa = Math.round(a.share * 100);
-  const pb = 100 - pa;
+// The whole interview as one strip: each turn sized by how much was said.
+function Ribbon({ a }) {
+  const [hover, setHover] = useState(null);
+  const total = a.ribbon.reduce((s, r) => s + Math.max(r.words, 3), 0) || 1;
+  const segs = a.ribbon.map((r, i) => ({ ...r, q: a.ribbon.slice(0, i + 1).filter((x) => x.who === "them").length }));
+  const shown = hover !== null ? segs[hover] : null;
   return (
-    <div className="card p-5">
-      <div className="text-muted text-[0.92rem]">{title}</div>
-      <div className="mt-3 flex h-3 gap-[2px]" role="img" aria-label={`${a.label} ${pa}%, ${b.label} ${pb}%`}>
-        {pa > 0 && <motion.div title={`${a.label}: ${pa}%`} className="h-full rounded-l-full" style={{ background: a.color, borderTopRightRadius: pb ? 0 : 999, borderBottomRightRadius: pb ? 0 : 999 }}
-          initial={{ width: 0 }} animate={{ width: `${pa}%` }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }} />}
-        {pb > 0 && <div title={`${b.label}: ${pb}%`} className="h-full flex-1 rounded-r-full" style={{ background: b.color, borderTopLeftRadius: pa ? 0 : 999, borderBottomLeftRadius: pa ? 0 : 999 }} />}
+    <div>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <Legend items={[["You", YOU], ["Interviewer", THEM]]} />
+        <span className="text-sm text-muted">{fmtDuration(a.duration)} in total. Hover a block to read it.</span>
       </div>
-      <div className="mt-3 flex flex-wrap justify-between gap-2 text-sm">
-        {[[a, pa], [b, pb]].map(([s, p]) => (
-          <span key={s.label} className="flex items-center gap-1.5 text-ink-2">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} aria-hidden />
-            {s.label} <span className="font-semibold text-ink tabular-nums">{p}%</span>
+      <div className="mt-4 flex h-14 gap-[2px]" role="img"
+        aria-label={`Conversation of ${segs.length} turns. You spoke ${Math.round(a.youShare * 100)} percent of the words.`}
+        onMouseLeave={() => setHover(null)}>
+        {segs.map((s, i) => (
+          <motion.button type="button" key={i} aria-label={`${s.who === "you" ? "Your answer" : `Question ${s.q}`}, ${s.words} words`}
+            onMouseEnter={() => setHover(i)} onFocus={() => setHover(i)} onClick={() => setHover(i)}
+            className="h-full first:rounded-l-xl last:rounded-r-xl origin-left focus-visible:outline-2"
+            style={{ flexGrow: Math.max(s.words, 3), flexBasis: 0, minWidth: 4, background: s.who === "you" ? YOU : THEM, opacity: hover === null || hover === i ? 1 : 0.45 }}
+            initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.45, delay: 0.08 * i, ease: [0.22, 1, 0.36, 1] }} />
+        ))}
+      </div>
+      <div className="mt-2 flex gap-[2px] text-xs text-muted" aria-hidden>
+        {segs.map((s, i) => (
+          <span key={i} style={{ flexGrow: Math.max(s.words, 3), flexBasis: 0, minWidth: 4 }} className="truncate">
+            {s.who === "them" && (Math.max(s.words, 3) / total > 0.05 ? `Q${s.q}` : "")}
           </span>
         ))}
       </div>
-      {note && <p className="mt-2 text-sm text-muted">{note}</p>}
-    </div>
-  );
-}
-
-export function Overview({ feedback, stats }) {
-  const v = verdict(feedback.overall);
-  const top = feedback.strengths?.[0];
-  const focus = feedback.improvements?.[0];
-  return (
-    <div className="card overflow-hidden">
-      <div className="p-6 sm:p-8 grid lg:grid-cols-[auto_1fr] gap-8 items-center">
-        <div className="flex flex-col items-center gap-3">
-          <ScoreRing value={feedback.overall} size={168} />
-          <span className={`chip !border-transparent ${v.tone === "good" ? "!bg-sage-soft !text-sage" : "!bg-haldi-soft !text-haldi-ink"}`}>
-            {v.tone === "good" ? <TrendingUp size={14} aria-hidden /> : <Target size={14} aria-hidden />} {v.label}
-          </span>
-        </div>
-        <div>
-          <p className="text-xl sm:text-[1.35rem] leading-relaxed text-ink">{feedback.summary}</p>
-          <div className="mt-6 grid sm:grid-cols-2 gap-3">
-            {top && (
-              <div className="rounded-2xl bg-sage-soft p-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-sage"><Sparkles size={15} aria-hidden /> Your best moment</div>
-                <p className="mt-1 text-ink">{top.point}</p>
-              </div>
-            )}
-            {focus && (
-              <div className="rounded-2xl bg-haldi-soft p-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-haldi-ink"><Target size={15} aria-hidden /> Focus next time</div>
-                <p className="mt-1 text-ink">{focus.point}</p>
-              </div>
-            )}
-          </div>
-          {feedback.language_note && (
-            <p className="mt-5 flex items-start gap-2 text-sm text-muted"><Languages size={16} className="mt-0.5 shrink-0" aria-hidden /> {feedback.language_note}</p>
-          )}
-        </div>
-      </div>
-      <div className="border-t border-line bg-paper/60 px-6 sm:px-8 py-4 flex flex-wrap gap-x-8 gap-y-2 text-sm text-ink-2">
-        <span><span className="font-semibold text-ink">{stats.answers}</span> answers</span>
-        <span><span className="font-semibold text-ink">{fmtDuration(stats.duration)}</span> in conversation</span>
-        <span><span className="font-semibold text-ink">{stats.youWords}</span> words from you</span>
+      <div className="mt-4 min-h-[4.5rem] rounded-xl bg-paper px-4 py-3">
+        {shown ? (
+          <>
+            <p className="text-sm text-muted">{shown.who === "you" ? `Your answer to question ${shown.q}` : `Question ${shown.q}`}, at {fmtClock(shown.t)}, {shown.words} words</p>
+            <p className="mt-1 text-ink line-clamp-2" lang="hi">{shown.text}</p>
+          </>
+        ) : (
+          <p className="text-ink-2 py-2">
+            You spoke {Math.round(a.youShare * 100)}% of the words.{" "}
+            {a.hindiShare > 0.05 && `About ${Math.round(a.hindiShare * 100)}% of yours were in Hindi script, which never affects the score.`}
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-export function Skills({ scores }) {
+// Each answer's length against the range strong spoken answers usually fall in.
+function Lengths({ a }) {
+  const max = Math.max(300, ...a.items.map((x) => x.words)) * 1.05;
+  const pct = (w) => `${(w / max) * 100}%`;
+  const ticks = [0, 100, 200, 300].filter((t) => t <= max);
   return (
-    <div className="card p-6 sm:p-8 grid md:grid-cols-2 gap-x-10 gap-y-6">
-      {DIMENSIONS.map(([k, label, hint], i) => {
-        const v = scores?.[k] || 1;
-        return (
-          <div key={k}>
-            <div className="flex items-baseline justify-between">
-              <span className="font-semibold text-ink">{label}</span>
-              <span className="tabular-nums text-ink"><span className="display text-2xl">{v}</span><span className="text-muted">/5</span></span>
+    <div>
+      <Legend items={[["Your answer", YOU], [`Usual range for a strong answer (${SWEET_SPOT[0]}–${SWEET_SPOT[1]} words, about 45–95 seconds)`, "var(--sage)", true]]} />
+      <ol className="mt-5 space-y-4">
+        {a.items.map((x) => (
+          <li key={x.n} className="grid sm:grid-cols-[14rem_1fr] gap-x-5 gap-y-1.5 items-center">
+            <p className="text-ink-2 text-[0.95rem] line-clamp-2" title={x.question}>
+              <span className="text-ink font-medium">Q{x.n}</span> {x.question}
+            </p>
+            <div className="relative h-7">
+              <div className="absolute inset-y-0 rounded-md bg-sage-soft" style={{ left: pct(SWEET_SPOT[0]), width: pct(SWEET_SPOT[1] - SWEET_SPOT[0]) }} aria-hidden />
+              <div className="absolute left-0 top-1.5 bottom-1.5 rounded-r-md" style={{ width: pct(Math.max(x.words, 2)), background: YOU }}
+                title={`${x.words} words, about ${x.secs} seconds`} />
+              <span className="absolute top-1/2 -translate-y-1/2 text-sm text-ink tabular-nums whitespace-nowrap"
+                style={{ left: `calc(${pct(Math.max(x.words, 2))} + 8px)` }}>
+                {x.words} words, about {x.secs}s
+              </span>
             </div>
-            <div className="mt-2 flex gap-[2px]" role="meter" aria-label={label} aria-valuemin={1} aria-valuemax={5} aria-valuenow={v}>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <motion.span key={n} className="h-2.5 flex-1 first:rounded-l-full last:rounded-r-full"
-                  style={{ background: n <= v ? C_YOU : "var(--paper-2)" }}
-                  initial={{ opacity: 0.2 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 * i + 0.06 * n }} />
+          </li>
+        ))}
+      </ol>
+      <div className="mt-3 sm:ml-[19.25rem] relative h-5 text-xs text-muted tabular-nums" aria-hidden>
+        {ticks.map((t) => (
+          <span key={t} className="absolute -translate-x-1/2" style={{ left: pct(t) }}>{t}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// What each answer contained, checked against the four things interviewers listen for.
+function Anatomy({ a }) {
+  return (
+    <div>
+      <div>
+        <table className="w-full text-left table-fixed">
+          <caption className="sr-only">Which parts each answer contained</caption>
+          <thead>
+            <tr className="text-sm text-muted">
+              <th scope="col" className="font-normal pb-3 pr-2 w-14 sm:w-auto">Answer</th>
+              {CHECKS.map(([k, label]) => <th key={k} scope="col" className="font-normal pb-3 px-1 text-center text-xs sm:text-sm leading-tight align-bottom">{label}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {a.items.map((x) => (
+              <tr key={x.n} className="border-t border-line">
+                <th scope="row" className="py-3 pr-2 font-normal text-ink-2">
+                  <span className="text-ink font-medium">Q{x.n}</span>
+                  <span className="hidden sm:block line-clamp-1" title={x.question}>{x.question}</span>
+                </th>
+                {CHECKS.map(([k]) => (
+                  <td key={k} className="py-3 px-2 text-center">
+                    <span className="inline-block h-4 w-4 rounded-full align-middle"
+                      style={x.checks[k] ? { background: YOU } : { boxShadow: "inset 0 0 0 2px #cfc7de" }} aria-hidden />
+                    <span className="sr-only">{x.checks[k] ? "Yes" : "No"}</span>
+                  </td>
+                ))}
+              </tr>
+            ))}
+            <tr className="border-t border-line text-sm text-ink-2">
+              <th scope="row" className="pt-3 pr-2 font-normal"><span className="hidden sm:inline">Answers with it</span><span className="sm:hidden">Total</span></th>
+              {CHECKS.map(([k]) => (
+                <td key={k} className="pt-3 px-1 text-center tabular-nums">{a.items.length - a.missing[k]}/{a.items.length}</td>
               ))}
-            </div>
-            <p className="mt-2 text-sm text-muted">{hint}</p>
-          </div>
-        );
-      })}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div className="mt-6 grid md:grid-cols-2 gap-x-10 gap-y-4 text-[0.97rem]">
+        <p className="text-ink-2">
+          <span className="text-ink font-medium">“I” {a.I} {a.I === 1 ? "time" : "times"}, “we” {a.WE} {a.WE === 1 ? "time" : "times"}.</span>{" "}
+          {a.WE > a.I ? "Interviewers listen for your own part. Swap a few “we”s for what you personally did." : "Good: you made your own role clear."}
+        </p>
+        <p className="text-ink-2">
+          <span className="text-ink font-medium">Numbers you used: </span>
+          {a.items.flatMap((x) => x.numbers).length
+            ? a.items.flatMap((x) => x.numbers).slice(0, 8).map((n, i) => <span key={i} className="inline-block mr-2" lang="hi">“{n}”</span>)
+            : "none yet. A result with a number is the easiest way to make an answer stick."}
+        </p>
+      </div>
+      <p className="mt-5 text-sm text-muted">Spotted automatically from your words in English, Hindi and Hinglish, so treat these as hints. They are not part of your score.</p>
     </div>
   );
 }
 
-export function Stats({ stats }) {
+// ---------- what the interviewer's notes say, in the candidate's words ----------
+
+function Notes({ feedback }) {
+  const block = (title, color, list) => (
+    <div>
+      <h4 className="font-medium text-ink">{title}</h4>
+      <ul className="mt-4 space-y-6">
+        {(list || []).map((s, i) => (
+          <li key={i} className="pl-4 border-l-[3px]" style={{ borderColor: color }}>
+            <p className="text-ink leading-relaxed">{s.point}</p>
+            {s.quote && <p className="mt-2 text-ink-2 italic" lang="hi">“{s.quote}”</p>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatTile icon={Clock} label="Duration" value={fmtDuration(stats.duration)} note={`${stats.questions} questions asked`} />
-      <StatTile icon={MessageCircle} label="Average answer" value={`${stats.avgAnswerWords} words`} note={`Longest: ${stats.longestAnswerWords} words`} />
-      <StatTile icon={Clock} label="Time per answer" value={stats.avgAnswerTime ? `${stats.avgAnswerTime}s` : "–"} note="Including thinking time" />
-      <StatTile icon={Undo2} label="You interrupted" value={stats.interruptions} note={stats.interruptions ? "Times you cut in mid-question" : "Let every question finish"} />
-      <div className="col-span-2">
-        <SplitBar title="Who did the talking" a={{ label: "You", share: stats.talkShare, color: C_YOU }}
-          b={{ label: "Interviewer", color: C_OTHER }}
-          note={stats.talkShare >= 0.6 ? "You carried the conversation, as you should." : "In a good interview the candidate talks most of the time."} />
+    <section className="mt-16">
+      <h3 className="display display-tight text-[1.65rem] sm:text-[2rem] text-accent">What the interviewer would remember</h3>
+      <p className="mt-2 text-ink-2 max-w-2xl">Quotes are your exact words, checked against the transcript.</p>
+      <div className="mt-7 grid md:grid-cols-2 gap-x-12 gap-y-10">
+        {block("Worked in your favour", "var(--sage)", feedback.strengths)}
+        {block("Held you back", "var(--haldi)", feedback.improvements)}
       </div>
-      <div className="col-span-2">
-        <SplitBar title="Your language mix (by words)" a={{ label: "Hindi script", share: stats.hindiShare, color: C_YOU }}
-          b={{ label: "English", color: C_OTHER }} note="Shown for interest only. Language never affects your score." />
-      </div>
-      <div className="col-span-2 lg:col-span-4">
-        <div className="card p-5 flex flex-wrap items-center gap-4">
-          <span className="h-10 w-10 rounded-xl bg-violet-soft text-violet grid place-items-center"><Type size={18} aria-hidden /></span>
-          <div className="flex-1 min-w-[12rem]">
-            <div className="font-semibold text-ink">
-              {stats.fillers} filler {stats.fillers === 1 ? "word" : "words"}
-              <span className="font-normal text-muted"> (um, uh, basically, matlab…)</span>
-            </div>
-            <p className="text-sm text-muted">For your awareness only. Fillers are never counted against you.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+      {feedback.quotes_removed > 0 && (
+        <p className="mt-5 text-sm text-muted">
+          {feedback.quotes_removed} paraphrased {feedback.quotes_removed === 1 ? "quote was" : "quotes were"} left out because {feedback.quotes_removed === 1 ? "it" : "they"} didn&apos;t match your exact words.
+        </p>
+      )}
+    </section>
   );
 }
 
-export function Highlights({ feedback }) {
-  return (
-    <div className="grid md:grid-cols-2 gap-5">
-      <div className="card p-6">
-        <h3 className="flex items-center gap-2 font-semibold text-sage"><Sparkles size={18} aria-hidden /> What worked</h3>
-        <ol className="mt-4 space-y-5">
-          {(feedback.strengths || []).map((s, i) => (
-            <li key={i} className="grid grid-cols-[1.75rem_1fr] gap-2">
-              <span className="h-7 w-7 rounded-full bg-sage-soft text-sage text-sm font-semibold grid place-items-center">{i + 1}</span>
-              <div><p className="text-ink">{s.point}</p><Quote text={s.quote} /></div>
-            </li>
-          ))}
-        </ol>
-      </div>
-      <div className="card p-6">
-        <h3 className="flex items-center gap-2 font-semibold text-haldi-ink"><Target size={18} aria-hidden /> What to sharpen</h3>
-        <ol className="mt-4 space-y-5">
-          {(feedback.improvements || []).map((s, i) => (
-            <li key={i} className="grid grid-cols-[1.75rem_1fr] gap-2">
-              <span className="h-7 w-7 rounded-full bg-haldi-soft text-haldi-ink text-sm font-semibold grid place-items-center">{i + 1}</span>
-              <div><p className="text-ink">{s.point}</p><Quote text={s.quote} /></div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </div>
-  );
-}
-
-export function BetterAnswers({ examples }) {
+function Rewrites({ examples }) {
   if (!examples?.length) return null;
   return (
-    <div className="space-y-5">
-      {examples.map((ex, i) => (
-        <div key={i} className="card overflow-hidden">
-          <div className="px-6 py-4 border-b border-line bg-paper/60 flex items-start gap-3">
-            <MessagesSquare size={18} className="mt-1 shrink-0 text-violet" aria-hidden />
+    <section className="mt-16">
+      <h3 className="display display-tight text-[1.65rem] sm:text-[2rem] text-accent">The same answers, made stronger</h3>
+      <div className="mt-7 space-y-10">
+        {examples.map((ex, i) => (
+          <article key={i} className="max-w-4xl">
             <p className="text-ink font-medium">{ex.question}</p>
-          </div>
-          <div className="grid md:grid-cols-2">
-            <div className="p-6 md:border-r border-line">
-              <div className="text-sm font-semibold text-muted">What you said</div>
-              {ex.your_answer_quote ? <Quote text={ex.your_answer_quote} /> : <p className="mt-3 text-muted">Paraphrased in the feedback, so not quoted here.</p>}
+            <div className="mt-4 grid md:grid-cols-2 gap-x-10 gap-y-4">
+              <div className="pl-4 border-l-[3px] border-[#d6d0e4]">
+                <p className="text-sm text-muted">You said</p>
+                <p className="mt-1.5 text-ink-2 italic leading-relaxed" lang="hi">
+                  {ex.your_answer_quote ? `“${ex.your_answer_quote}”` : "Your answer was paraphrased by the reviewer, so it isn't quoted here."}
+                </p>
+              </div>
+              <div className="pl-4 border-l-[3px] border-sage">
+                <p className="text-sm text-sage font-medium">A stronger version</p>
+                <p className="mt-1.5 text-ink leading-relaxed">{ex.improved_answer}</p>
+              </div>
             </div>
-            <div className="p-6 bg-sage-soft/50">
-              <div className="flex items-center gap-2 text-sm font-semibold text-sage"><Lightbulb size={15} aria-hidden /> A stronger version</div>
-              <p className="mt-3 text-ink leading-relaxed">{ex.improved_answer}</p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -239,12 +305,11 @@ export function Conversation({ turns, interviewer = "Interviewer" }) {
     <ol className="space-y-4">
       {turns.map((t, i) => {
         const mine = t.role === "candidate";
-        const q = numbers[i];
         return (
           <li key={i} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[85%] sm:max-w-[75%] rounded-3xl px-5 py-3.5 ${mine ? "bg-violet-soft rounded-br-lg" : "bg-white border border-line rounded-bl-lg"}`}>
               <div className="flex items-center gap-2 text-xs text-muted mb-1">
-                <span className="font-semibold text-ink-2">{mine ? "You" : `${interviewer}, question ${q}`}</span>
+                <span className="font-semibold text-ink-2">{mine ? "You" : `${interviewer}, question ${numbers[i]}`}</span>
                 <span className="tabular-nums">{fmtClock(t.t)}</span>
                 {t.interrupted && <span>(you cut in)</span>}
               </div>
@@ -258,36 +323,39 @@ export function Conversation({ turns, interviewer = "Interviewer" }) {
 }
 
 export default function Report({ feedback, transcript, durationS }) {
-  const stats = computeStats(transcript, durationS);
+  const a = analyse(transcript, durationS);
+  const one = oneThing(a, feedback);
+  const worst = Object.entries(a.missing).sort((x, y) => y[1] - x[1])[0];
+  const lengthTitle = a.avgWords < SWEET_SPOT[0]
+    ? "Your answers were shorter than interviewers expect."
+    : a.avgWords > SWEET_SPOT[1] ? "Your answers ran longer than they needed to." : "Your answers were about the right length.";
+  const anatomyTitle = worst && worst[1] > 0
+    ? `${worst[1]} of ${a.items.length} ${a.items.length === 1 ? "answer was" : "answers were"} missing ${CHECK_NOUN[worst[0]]}.`
+    : "Every answer had the four things interviewers listen for.";
   return (
     <div>
-      <Overview feedback={feedback} stats={stats} />
-      <Section title="Skill breakdown" subtitle="Judged only on what you said. Language, accent and grammar are never scored.">
-        <Skills scores={feedback.scores} />
-      </Section>
-      <Section title="Your interview in numbers">
-        <Stats stats={stats} />
-      </Section>
-      <Section title="In your own words" subtitle="Every quote below matches your transcript word for word.">
-        <Highlights feedback={feedback} />
-        {feedback.quotes_removed > 0 && (
-          <p className="mt-3 text-sm text-muted">
-            {feedback.quotes_removed} paraphrased {feedback.quotes_removed === 1 ? "quote was" : "quotes were"} removed because {feedback.quotes_removed === 1 ? "it" : "they"} didn&apos;t match your exact words.
-          </p>
-        )}
-      </Section>
-      {feedback.examples?.length > 0 && (
-        <Section title="Even better answers" subtitle="Your answer next to a stronger version you could try.">
-          <BetterAnswers examples={feedback.examples} />
-        </Section>
+      <CoachNote one={one} />
+      <ScoreLine feedback={feedback} />
+      {a.items.length > 0 && (
+        <>
+          <Figure title={a.youShare >= 0.55 ? "You carried the conversation." : "The interviewer did more of the talking than you."}
+            lede="The whole interview, start to finish. Each block is one turn, sized by how much was said.">
+            <Ribbon a={a} />
+          </Figure>
+          <Figure title={lengthTitle} lede={`On average about ${a.avgSecs} seconds per answer.`}>
+            <Lengths a={a} />
+          </Figure>
+          <Figure title={anatomyTitle} lede="Strong answers name a real situation, say what you did, give a number and explain why.">
+            <Anatomy a={a} />
+          </Figure>
+        </>
       )}
-      <div className="mt-12 card p-6 sm:p-8 flex flex-wrap items-center justify-between gap-4 bg-cream">
-        <div>
-          <h3 className="display display-tight text-2xl text-accent">Ready for another round?</h3>
-          <p className="mt-1 text-ink-2">Practise the same role again and see the score move.</p>
-        </div>
-        <a href="/practice" className="btn btn-accent">Practise again <ArrowUpRight size={17} /></a>
-      </div>
+      <Notes feedback={feedback} />
+      <Rewrites examples={feedback.examples} />
+      <section className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-8">
+        <p className="text-lg text-ink-2 max-w-xl">Try the same role again with the note above in mind, and compare the two reports.</p>
+        <a href="/practice" className="btn btn-accent">Practise this again</a>
+      </section>
     </div>
   );
 }
