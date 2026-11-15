@@ -13,7 +13,13 @@ export default function DeleteData() {
     setBusy(true);
     setError("");
     try {
-      setResult(await api("me", { method: "DELETE" }));
+      const out = await api("me", { method: "DELETE" });
+      try {
+        localStorage.removeItem("rapport:resumes");
+        localStorage.removeItem("rapport:resume");
+      } catch {}
+      window.dispatchEvent(new Event("rapport:data-deleted"));
+      setResult(out);
     } catch (e) {
       setError(e.message);
     }
@@ -26,7 +32,7 @@ export default function DeleteData() {
         <h2 className="font-semibold">Your data was deleted</h2>
         <p className="mt-2 text-sm text-ink-2">
           Removed {result.deleted.interviews} interviews, {result.deleted.templates} templates and{" "}
-          {result.deleted.assignments} invites, and your saved resume and profile from Rapport.
+          {result.deleted.assignments} invites, plus your saved resumes and profile from Rapport.
         </p>
         <a href="/auth/logout" className="btn btn-primary mt-4">Sign out</a>
       </div>
@@ -36,7 +42,7 @@ export default function DeleteData() {
     <div className="card p-6 border-danger/40">
       <h2 className="font-semibold text-danger">Delete my data</h2>
       <p className="mt-2 text-sm text-ink-2">
-        Permanently deletes your interviews, templates, invites, saved resume and profile from Rapport. Interviews you took for a
+        Permanently deletes your interviews, templates, invites, saved resumes and profile from Rapport. Interviews you took for a
         recruiter are deleted too. This can&apos;t be undone.
       </p>
       <label className="field-label mt-4" htmlFor="confirm">Type DELETE to confirm</label>

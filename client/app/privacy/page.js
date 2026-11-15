@@ -51,8 +51,8 @@ export default function PrivacyPage() {
           the transcript.
         </p>
         <p>
-          <strong>Deletion.</strong> &ldquo;Delete my data&rdquo; removes your interviews, templates, invites and
-          profile from Rapport&apos;s database. Gnani and your LLM
+          <strong>Deletion.</strong> &ldquo;Delete my data&rdquo; removes your interviews, templates, invites,
+          saved resumes and profile from Rapport&apos;s database. Gnani and your LLM
           provider retain data under their own policies.
         </p>
       </div>

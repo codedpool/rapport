@@ -25,6 +25,10 @@ export default function ResumesManager() {
     listResumes()
       .then((d) => { setList(d.resumes); setDefaultId(d.default_id); })
       .catch((e) => { setList([]); setError(e.message); });
+    // "Delete my data" on this page removes every resume too.
+    const wiped = () => { setList([]); setDefaultId(null); setMode("list"); };
+    window.addEventListener("rapport:data-deleted", wiped);
+    return () => window.removeEventListener("rapport:data-deleted", wiped);
   }, []);
 
   async function run(fn) {
