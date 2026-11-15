@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileText, Plus } from "lucide-react";
+import { FileText } from "lucide-react";
 import { fmtDate, summarize } from "@/lib/resume";
 import { addResume, content, listResumes, updateResume } from "@/lib/resumeStore";
 import { Editor, Uploader } from "@/components/resume/ResumeTools";
@@ -20,6 +20,9 @@ export default function ResumeCard({ value, onChange, keys, setKeys }) {
   const [save, setSave] = useState(true);
   const [error, setError] = useState("");
 
+  const [expanded, setExpanded] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+
   useEffect(() => {
     let alive = true;
     listResumes()
@@ -33,13 +36,15 @@ export default function ResumeCard({ value, onChange, keys, setKeys }) {
         onChange(def ? content(def) : null);
         setMode(d.resumes.length ? "list" : "add");
       })
-      .catch(() => alive && setMode("add"));
+      // A failed load must never look like "no resumes": say so and offer a retry.
+      .catch(() => alive && setMode("failed"));
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [attempt]);
 
   function choose(id) {
     setSelected(id);
+    setExpanded(false);
     if (id === "none") return onChange(null);
     if (id === "once") return onChange(content(once));
     const r = list.find((x) => x.id === id);
@@ -61,6 +66,7 @@ export default function ResumeCard({ value, onChange, keys, setKeys }) {
       setDefaultId(out.default_id);
       setSelected(out.resume.id);
       onChange(content(out.resume));
+      setExpanded(false);
       setMode("list");
     } catch (e) {
       setError(e.message);
@@ -80,6 +86,7 @@ export default function ResumeCard({ value, onChange, keys, setKeys }) {
   }
 
   const rows = [...list, ...(once ? [{ ...once, id: "once", label: `${once.label} (this interview only)` }] : [])];
+  const current = rows.find((r) => r.id === selected) || null;
 
   return (
     <div className="mt-10 rounded-[1.5rem] border border-line bg-white p-5 sm:p-6">
@@ -97,9 +104,51 @@ export default function ResumeCard({ value, onChange, keys, setKeys }) {
       <div className="mt-5">
         {mode === "loading" && <p className="text-muted">Loading your resumes…</p>}
 
-        {mode === "list" && (
+        {mode === "failed" && (
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-ink-2">Your saved resumes couldn&apos;t be loaded.</p>
+            <button type="button" className="btn btn-ghost !py-1.5 !px-3.5 text-sm" onClick={() => { setMode("loading"); setAttempt((n) => n + 1); }}>Try again</button>
+          </div>
+        )}
+
+        {mode === "list" && !expanded && (
+          <div>
+            {current ? (
+              <div className="rounded-2xl border border-violet bg-violet-soft/60 p-4">
+                <p className="text-sm text-violet font-medium">
+                  {current.id === defaultId ? "Using your default resume" : current.id === "once" ? "Using a resume for this interview only" : "Using this resume"}
+                </p>
+                <p className="mt-1 font-semibold text-ink">{current.label.replace(" (this interview only)", "")}</p>
+                <p className="text-sm text-ink-2">{summarize(current)}</p>
+                {current.updated_at && <p className="text-xs text-muted mt-0.5">Updated {fmtDate(current.updated_at)}</p>}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-line p-4">
+                <p className="text-ink">No resume for this interview.</p>
+                <p className="text-sm text-muted">The interviewer will ask general questions for the role.</p>
+              </div>
+            )}
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              {rows.length > 1 || (rows.length === 1 && !current) ? (
+                <button type="button" className="text-accent underline underline-offset-4" onClick={() => setExpanded(true)}>
+                  {current ? "Choose another resume" : "Use a saved resume"}
+                </button>
+              ) : null}
+              <button type="button" className="text-accent underline underline-offset-4" onClick={() => { setError(""); setMode("add"); }}>Upload a new one</button>
+              {current && current.id !== "once" && (
+                <button type="button" className="text-accent underline underline-offset-4" onClick={() => { setDraft(structuredClone(current)); setMode("edit"); }}>Edit points</button>
+              )}
+              {current && <button type="button" className="text-muted underline underline-offset-4" onClick={() => choose("none")}>Don&apos;t use a resume this time</button>}
+            </div>
+            {where === "browser" && list.length > 0 && (
+              <p className="mt-3 text-sm text-muted">Saved in this browser only. Sign in to keep your resumes on your account.</p>
+            )}
+          </div>
+        )}
+
+        {mode === "list" && expanded && (
           <fieldset>
-            <legend className="sr-only">Resume for this interview</legend>
+            <legend className="text-sm text-ink-2 mb-2">Choose the resume for this interview</legend>
             <ul className="space-y-2">
               {rows.map((r) => (
                 <li key={r.id}>
@@ -113,10 +162,6 @@ export default function ResumeCard({ value, onChange, keys, setKeys }) {
                       </span>
                       <span className="block text-sm text-ink-2 truncate">{summarize(r)}</span>
                     </span>
-                    {r.id !== "once" && (
-                      <button type="button" className="text-sm text-accent underline underline-offset-4"
-                        onClick={(e) => { e.preventDefault(); setDraft(structuredClone(r)); setMode("edit"); }}>Edit</button>
-                    )}
                   </label>
                 </li>
               ))}
@@ -127,12 +172,7 @@ export default function ResumeCard({ value, onChange, keys, setKeys }) {
                 </label>
               </li>
             </ul>
-            <button type="button" className="mt-3 flex items-center gap-1.5 text-violet font-medium" onClick={() => { setError(""); setMode("add"); }}>
-              <Plus size={17} /> Add a resume
-            </button>
-            {where === "browser" && list.length > 0 && (
-              <p className="mt-2 text-sm text-muted">Saved in this browser only. Sign in to keep your resumes on your account.</p>
-            )}
+            <button type="button" className="mt-3 text-sm text-muted underline underline-offset-4" onClick={() => setExpanded(false)}>Close</button>
           </fieldset>
         )}
 
