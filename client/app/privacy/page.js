@@ -6,7 +6,7 @@ const rows = [
   ["Camera", "Preview on your screen only", "Video never leaves your browser."],
   ["Transcript, scores, feedback", "Saved in Rapport's database", "Guest interviews expire after 48 hours unless you sign in and save them. Signed-in interviews stay until you delete them."],
   ["Transcript sent to your LLM", "Groq, OpenRouter or Google Gemini, using your key", "Used to run the interview and write feedback, under that provider's terms."],
-  ["Google profile (name, email, picture)", "Auth0 sign-in, and Rapport's database", "Deleted with 'Delete my data' on your account page."],
+  ["Google profile (name, email, picture)", "Auth0 sign-in, and Rapport's database", "Rapport's copy is deleted with 'Delete my data'. Auth0 keeps the Google sign-in record under its own terms."],
   ["Recruiter templates and invites", "Rapport's database", "Deleted with the recruiter's account. Candidates keep their own interview records."],
 ];
 
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           <strong>Deletion.</strong> &ldquo;Delete my data&rdquo; removes your interviews, templates, invites and
-          profile from Rapport&apos;s database and asks Auth0 to delete your sign-in profile. Gnani and your LLM
+          profile from Rapport&apos;s database. Gnani and your LLM
           provider retain data under their own policies.
         </p>
       </div>

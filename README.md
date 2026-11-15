@@ -93,7 +93,7 @@ npm install
 npm run dev                          # http://localhost:3000
 ```
 
-Auth0 application settings: Allowed Callback URLs `http://localhost:3000/auth/callback`, Allowed Logout URLs `http://localhost:3000`. To let "Delete my data" remove the Auth0 profile too, authorise the application for the Auth0 Management API with the `delete:users` scope.
+Auth0 application settings: Allowed Callback URLs `http://localhost:3000/auth/callback`, Allowed Logout URLs `http://localhost:3000`.
 
 ## Deploying
 
