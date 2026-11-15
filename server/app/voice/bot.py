@@ -113,14 +113,17 @@ class Reporter(FrameProcessor):
 
 
 class TTSRetryGuard(FrameProcessor):
-    """Sits between the LLM and TTS. If a turn comes back with no audio, speak it once more
-    so the candidate is never left waiting in silence."""
+    """Sits between the LLM and TTS. If a turn comes back with no audio, speak it again on a
+    fresh socket (up to twice) so the candidate is never left waiting in silence."""
 
-    def __init__(self):
+    MAX_RETRIES = 2
+
+    def __init__(self, tts=None):
         super().__init__()
+        self._tts = tts
         self._buf = ""
         self._last = ""
-        self._retried = True
+        self._retries = self.MAX_RETRIES
 
     def spoke_this_turn(self) -> bool:
         return bool(re.sub(r"<[^>]*>", "", clean_for_speech(self._buf)).strip())
@@ -133,10 +136,12 @@ class TTSRetryGuard(FrameProcessor):
             elif isinstance(frame, LLMTextFrame):
                 self._buf += frame.text
             elif isinstance(frame, LLMFullResponseEndFrame) and self._buf.strip():
-                self._last, self._retried = self._buf, False
-        elif isinstance(frame, ErrorFrame) and "no audio" in str(frame.error) and not self._retried:
-            self._retried = True
-            logger.warning("TTS turn produced no audio; retrying once")
+                self._last, self._retries = self._buf, 0
+        elif isinstance(frame, ErrorFrame) and "no audio" in str(frame.error) and self._retries < self.MAX_RETRIES:
+            self._retries += 1
+            logger.warning(f"TTS turn produced no audio; retry {self._retries} on a fresh socket")
+            if self._tts is not None and hasattr(self._tts, "reconnect_next"):
+                self._tts.reconnect_next()
             await self.push_frame(TTSSpeakFrame(clean_for_speech(self._last)), FrameDirection.DOWNSTREAM)
         await self.push_frame(frame, direction)
 
@@ -246,7 +251,7 @@ async def run_interview(ws: WebSocket, session: LiveSession) -> None:
         ),
     )
 
-    guard = TTSRetryGuard()
+    guard = TTSRetryGuard(tts)
     pipeline = Pipeline([
         transport.input(), stt, aggregators.user(), llm, guard, tts,
         Reporter(events), transport.output(), aggregators.assistant(),

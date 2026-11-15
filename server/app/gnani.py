@@ -103,10 +103,17 @@ class RapportGnaniTTS(GnaniTTSService):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._last_activity = time.monotonic()
+        self._fresh_next = False
+
+    def reconnect_next(self) -> None:
+        """Open a new socket for the next request (used before retrying a silent turn)."""
+        self._fresh_next = True
 
     async def run_tts(self, text: str, context_id: str):
-        if self._ws is not None and time.monotonic() - self._last_activity > self.IDLE_RECONNECT_S:
+        stale = time.monotonic() - self._last_activity > self.IDLE_RECONNECT_S
+        if self._ws is not None and (self._fresh_next or stale):
             await self._disconnect_websocket()
+        self._fresh_next = False
         self._last_activity = time.monotonic()
         async for frame in super().run_tts(text, context_id):
             yield frame
