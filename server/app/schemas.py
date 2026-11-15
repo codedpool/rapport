@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 Language = Literal["en", "hi", "hinglish"]
 InterviewType = Literal["technical", "hr", "mixed"]
-LLMProvider = Literal["openrouter", "gemini"]
+LLMProvider = Literal["groq", "openrouter", "gemini"]
 
 # Timbre v3.0 voices (each speaks all ten languages). Persona from Gnani's catalog.
 VOICES: dict[str, dict] = {
@@ -62,7 +62,7 @@ class InterviewSpec(_Strict):
 
 class Keys(_Strict):
     gnani_api_key: str = Field(min_length=8, max_length=300)
-    llm_provider: LLMProvider = "openrouter"
+    llm_provider: LLMProvider = "groq"
     llm_api_key: str = Field(min_length=8, max_length=300)
     llm_model: str | None = Field(default=None, pattern=MODEL_PATTERN)
 

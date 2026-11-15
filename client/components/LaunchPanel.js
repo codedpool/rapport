@@ -19,8 +19,18 @@ const VOICES = [
 ];
 
 const PROVIDERS = [
-  { id: "openrouter", label: "OpenRouter", keyLabel: "OpenRouter key", placeholder: "sk-or-…" },
-  { id: "gemini", label: "Gemini", keyLabel: "Google AI Studio key", placeholder: "AIza…" },
+  {
+    id: "groq", label: "Groq", keyLabel: "Groq key", placeholder: "gsk_…", model: "qwen/qwen3.8-27b",
+    note: "Fastest. Replies in well under a second, so the interview feels real-time. Free key at console.groq.com.",
+  },
+  {
+    id: "openrouter", label: "OpenRouter", keyLabel: "OpenRouter key", placeholder: "sk-or-…", model: "nvidia/nemotron-3.5-super-vl:free",
+    note: "Uses free models by default. Slower: expect a few seconds per reply.",
+  },
+  {
+    id: "gemini", label: "Gemini", keyLabel: "Google AI Studio key", placeholder: "AIza…", model: "gemini-3.5-flash-lite",
+    note: "Google's own models. Usually a second or two per reply.",
+  },
 ];
 
 function SecretField({ id, label, value, onChange, placeholder }) {
@@ -42,7 +52,7 @@ function SecretField({ id, label, value, onChange, placeholder }) {
 
 export default function LaunchPanel({ mode = "mock", spec, assignmentId }) {
   const router = useRouter();
-  const [keys, setKeys] = useState({ gnani_api_key: "", llm_provider: "openrouter", llm_api_key: "", llm_model: "" });
+  const [keys, setKeys] = useState({ gnani_api_key: "", llm_provider: "groq", llm_api_key: "", llm_model: "" });
   const [remember, setRemember] = useState(false);
   const [voice, setVoice] = useState("Shivani");
   const [engine, setEngine] = useState("expressive");
@@ -116,8 +126,10 @@ export default function LaunchPanel({ mode = "mock", spec, assignmentId }) {
           onChange={(e) => setKeys({ ...keys, gnani_api_key: e.target.value })} />
         <div>
           <span className="field-label">LLM provider</span>
-          <Segmented label="LLM provider" size="sm" value={keys.llm_provider} options={PROVIDERS}
+          <Segmented label="LLM provider" size="sm" value={keys.llm_provider}
+            options={PROVIDERS.map((p) => ({ id: p.id, label: p.id === "groq" ? "Groq (fastest)" : p.label }))}
             onChange={(v) => setKeys({ ...keys, llm_provider: v })} />
+          <p className={`hint ${keys.llm_provider === "groq" ? "!text-sage" : ""}`}>{provider.note}</p>
         </div>
         <SecretField id="llm" label={provider.keyLabel} placeholder={provider.placeholder} value={keys.llm_api_key}
           onChange={(e) => setKeys({ ...keys, llm_api_key: e.target.value })} />
@@ -169,7 +181,10 @@ export default function LaunchPanel({ mode = "mock", spec, assignmentId }) {
                 <div>
                   <label className="field-label" htmlFor="model">Model <span className="font-normal text-muted">(optional)</span></label>
                   <input id="model" className="field font-mono text-sm" value={keys.llm_model}
-                    onChange={(e) => setKeys({ ...keys, llm_model: e.target.value })} placeholder={keys.llm_provider === "openrouter" ? "nvidia/nemotron-3.5-super-vl:free" : "gemini-3.5-flash-lite"} />
+                    onChange={(e) => setKeys({ ...keys, llm_model: e.target.value })} placeholder={provider.model} />
+                  {keys.llm_provider === "groq" && (
+                    <p className="hint">If a model is busy, Rapport switches automatically: Qwen, then GPT-OSS 20B, then GPT-OSS 120B.</p>
+                  )}
                 </div>
               </div>
             </motion.div>

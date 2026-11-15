@@ -8,7 +8,7 @@ appear verbatim in what the candidate said; quotes that don't are removed.
 import re
 import unicodedata
 
-from ..llm import chat_json
+from ..llm import chat_json, estimate_tokens, request_budget
 from .prompts import TYPE_LABEL
 
 TAG_RE = re.compile(r"<[a-z ]{2,20}>")
@@ -135,6 +135,21 @@ def _clean(raw: dict, transcript: list[dict]) -> dict:
     }
 
 
+def _fit_messages(spec: dict, transcript: list[dict], provider: str) -> list[dict]:
+    """Shrink very long transcripts so prompt plus reply fits the provider's request budget.
+    Candidate words are what get quoted, so interviewer lines are shortened first."""
+    limit = request_budget(provider) - 1800  # room for a full feedback reply
+    msgs = _messages(spec, transcript)
+    if estimate_tokens(msgs) <= limit:
+        return msgs
+    short = [dict(t, text=t["text"][:160]) if t["role"] == "interviewer" else t for t in transcript]
+    msgs = _messages(spec, short)
+    while estimate_tokens(msgs) > limit and len(short) > 4:
+        short = short[2:]  # drop the oldest exchange
+        msgs = _messages(spec, short)
+    return msgs
+
+
 async def generate(spec: dict, transcript: list[dict], *, provider: str, key: str, model: str) -> dict:
     if candidate_words(transcript) < 12:
         return {
@@ -143,5 +158,6 @@ async def generate(spec: dict, transcript: list[dict], *, provider: str, key: st
             "scores": None, "overall": None, "strengths": [], "improvements": [], "examples": [],
             "language_note": "", "quotes_removed": 0,
         }
-    raw = await chat_json(provider, key, model, _messages(spec, transcript), temperature=0.3, max_tokens=5000, timeout=90)
+    raw = await chat_json(provider, key, model, _fit_messages(spec, transcript, provider),
+                          temperature=0.3, max_tokens=5000, timeout=90)
     return _clean(raw, transcript)

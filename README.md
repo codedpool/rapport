@@ -31,7 +31,7 @@ Browser (Next.js)
   └─ mic PCM 16 kHz ◄──── websocket ────► Python API: Pipecat pipeline
                                               Gnani Prisma v3.0 STT (realtime)
                                               → user turn (Silero VAD + smart-turn)
-                                              → LLM (OpenRouter or Gemini, streaming)
+                                              → LLM (Groq by default, or OpenRouter / Gemini; streaming)
                                               → Gnani Timbre TTS (realtime) ──► PCM 24 kHz back
                                           MongoDB: interviews, templates, invites (never keys)
 ```
@@ -43,7 +43,9 @@ Browser (Next.js)
 
 ## Bring your own keys
 
-Anyone can try Rapport with their own Gnani key and an LLM key (OpenRouter or Gemini).
+Anyone can try Rapport with their own Gnani key and an LLM key: Groq (default and fastest, free key at console.groq.com), OpenRouter or Gemini.
+
+On Groq the interviewer falls back automatically from Qwen to GPT-OSS 20B to GPT-OSS 120B when a model is rate-limited or busy, and every request is sized to stay inside Groq's free per-minute token budget.
 
 - Keys go to the Python server over HTTPS because browsers cannot set the websocket auth headers Gnani requires.
 - They are held in memory for one interview and dropped when it ends.

@@ -7,6 +7,7 @@ by the caller.
 """
 
 import asyncio
+import re
 import time
 
 from fastapi import WebSocket
@@ -52,10 +53,20 @@ from ..gnani import LANG, make_stt, make_tts, tts_voice
 from ..interview import feedback as fb
 from ..interview import records
 from ..interview.prompts import KICKOFF, LANGUAGE_NAME, TIME_UP, TIME_WARNING, system_prompt
-from ..llm import LLMError, base_url, extra_body
+from ..llm import LLMError, base_url, model_chain
 from ..sessions import LiveSession
 from .filters import InterviewerTextFilter, clean_for_speech
+from .llm_service import FallbackLLMService
 from .serializer import IN_RATE, OUT_RATE, RapportSerializer
+
+STOP_WORDS = ("stop", "end the interview", "end this", "finish", "that's all", "bas", "band karo", "khatam",
+              "बस", "बंद", "खत्म", "रोक")
+
+GOODBYE = {
+    "en": "Thank you, that's all from my side. Your feedback will appear on screen in a moment.",
+    "hi": "धन्यवाद, मेरी तरफ़ से बस इतना ही। आपका feedback कुछ ही देर में स्क्रीन पर आ जाएगा।",
+    "hinglish": "Thank you, मेरी तरफ़ से बस इतना ही। आपका feedback अभी screen पर आ जाएगा।",
+}
 
 FORCED_CLOSE = {
     "en": "We're out of time, so let's stop here. Thank you, your feedback will appear on screen.",
@@ -110,6 +121,9 @@ class TTSRetryGuard(FrameProcessor):
         self._buf = ""
         self._last = ""
         self._retried = True
+
+    def spoke_this_turn(self) -> bool:
+        return bool(re.sub(r"<[^>]*>", "", clean_for_speech(self._buf)).strip())
 
     async def process_frame(self, frame, direction: FrameDirection):
         await super().process_frame(frame, direction)
@@ -182,11 +196,29 @@ async def run_interview(ws: WebSocket, session: LiveSession) -> None:
     tts = make_tts(keys.gnani.get(), session.voice, spec["language"],
                    text_filters=[InterviewerTextFilter()], engine=session.voice_engine)
     interviewer = session.voice
-    llm = OpenAILLMService(
+    # Groq: small prompts keep each turn well inside the per-model minute budget.
+    prompt_budget = 3500 if keys.llm_provider == "groq" else 12000
+    def end_tool_allowed(messages: list[dict]) -> bool:
+        """Offer end_interview only once ending is plausible: time is up, the candidate
+        asked to stop, or the planned questions have had answers. Stays on once on."""
+        if state.get("tools_on"):
+            return True
+        said = [str(m.get("content") or "") for m in messages
+                if m.get("role") == "user" and not str(m.get("content") or "").startswith("(")]
+        asked_to_stop = bool(said) and any(w in said[-1].lower() for w in STOP_WORDS)
+        if state.get("time_up") or asked_to_stop or len(said) >= max(3, len(session.questions)):
+            state["tools_on"] = True
+        return bool(state.get("tools_on"))
+
+    llm = FallbackLLMService(
+        tools_gate=end_tool_allowed,
+        provider=keys.llm_provider,
+        chain=model_chain(keys.llm_provider, keys.llm_model),
+        prompt_budget=prompt_budget,
+        reply_tokens=400,
         api_key=keys.llm.get(), base_url=base_url(keys.llm_provider),
         settings=OpenAILLMService.Settings(
             model=keys.llm_model, temperature=0.7,
-            extra={"extra_body": extra_body(keys.llm_provider)} if extra_body(keys.llm_provider) else {},
             system_instruction=system_prompt(spec, session.questions, interviewer),
         ),
     )
@@ -214,8 +246,9 @@ async def run_interview(ws: WebSocket, session: LiveSession) -> None:
         ),
     )
 
+    guard = TTSRetryGuard()
     pipeline = Pipeline([
-        transport.input(), stt, aggregators.user(), llm, TTSRetryGuard(), tts,
+        transport.input(), stt, aggregators.user(), llm, guard, tts,
         Reporter(events), transport.output(), aggregators.assistant(),
     ])
     task = PipelineTask(
@@ -226,11 +259,23 @@ async def run_interview(ws: WebSocket, session: LiveSession) -> None:
     task_ref["task"] = task
 
     async def end_interview(params):
+        # Models sometimes call this too early (even in the greeting). Only end when time is
+        # up, the candidate asked to stop, or the planned questions have had their answers.
+        answers = [t["text"].lower() for t in transcript if t["role"] == "candidate"]
+        asked_to_stop = bool(answers) and any(w in answers[-1] for w in STOP_WORDS)
+        enough = len(answers) >= max(3, len(session.questions))
+        if not (state.get("time_up") or asked_to_stop or enough):
+            # Ask the model to carry on, so the candidate is never left in silence.
+            await params.result_callback(
+                {"status": "not_ended", "reason": "The interview is still in progress. Continue with the next question."},
+                properties=FunctionCallResultProperties(run_llm=True))
+            return
         state["ending"] = True
         await params.result_callback({"status": "ended"},
                                      properties=FunctionCallResultProperties(run_llm=False))
         await events.send({"type": "status", "status": "ending"})
-        await task.queue_frame(EndFrame())
+        frames = [] if guard.spoke_this_turn() else [TTSSpeakFrame(GOODBYE[state["language"]])]
+        await task.queue_frames(frames + [EndFrame()])
 
     llm.register_function("end_interview", end_interview)
 
@@ -270,6 +315,7 @@ async def run_interview(ws: WebSocket, session: LiveSession) -> None:
             await task.queue_frame(note(TIME_WARNING))
         await asyncio.sleep(min(60, max(dur - 30, 0)))
         if not state["ending"]:
+            state["time_up"] = True
             await task.queue_frame(note(TIME_UP))
         await asyncio.sleep(max(cap - elapsed(), 0))
         if not state["ending"]:

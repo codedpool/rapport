@@ -5,7 +5,7 @@ const rows = [
   ["Your voice", "Streamed to Gnani for live transcription", "Rapport does not record or store audio."],
   ["Camera", "Preview on your screen only", "Video never leaves your browser."],
   ["Transcript, scores, feedback", "Saved in Rapport's database", "Guest interviews expire after 48 hours unless you sign in and save them. Signed-in interviews stay until you delete them."],
-  ["Transcript sent to your LLM", "OpenRouter or Google Gemini, using your key", "Used to run the interview and write feedback, under that provider's terms."],
+  ["Transcript sent to your LLM", "Groq, OpenRouter or Google Gemini, using your key", "Used to run the interview and write feedback, under that provider's terms."],
   ["Google profile (name, email, picture)", "Auth0 sign-in, and Rapport's database", "Deleted with 'Delete my data' on your account page."],
   ["Recruiter templates and invites", "Rapport's database", "Deleted with the recruiter's account. Candidates keep their own interview records."],
 ];
