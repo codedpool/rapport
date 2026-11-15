@@ -107,6 +107,12 @@ class ResumeProfile(_Strict):
     def _projects(cls, v): return [p for p in v if p.title.strip() or p.detail.strip()][:4]
 
 
+class ResumeItemIn(ResumeProfile):
+    """A named resume in the user's list."""
+
+    label: str = Field(default="My resume", min_length=1, max_length=60)
+
+
 class ResumeParseIn(_Strict):
     text: str = Field(min_length=1, max_length=20000)
     file_name: str = Field(default="", max_length=120)

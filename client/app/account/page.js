@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/requireUser";
 import DeleteData from "./DeleteData";
+import ResumesManager from "./ResumesManager";
 
 export const metadata = { title: "Account · Rapport" };
 
@@ -22,10 +23,11 @@ export default async function AccountPage() {
       <div className="card p-6">
         <h2 className="font-semibold">What we keep</h2>
         <p className="mt-2 text-ink-2 text-sm leading-relaxed">
-          Your Google profile (name, email, picture) via Auth0, and your interviews: transcripts, scores and feedback,
-          plus templates and invites if you hire. We never store API keys or audio.
+          Your Google profile (name, email, picture) via Auth0, your interviews (transcripts, scores and feedback),
+          the short summaries of your saved resumes, plus templates and invites if you hire. We never store API keys or audio.
         </p>
       </div>
+      <ResumesManager />
       <DeleteData />
     </div>
   );

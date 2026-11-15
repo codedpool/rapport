@@ -41,7 +41,7 @@ export function summarize(r) {
   const parts = [];
   if (r.roles?.[0]) parts.push(r.roles[0]);
   if (r.projects?.length) parts.push(`${r.projects.length} ${r.projects.length === 1 ? "project" : "projects"}`);
-  if (r.skills?.length) parts.push(`${r.skills.length} skills`);
+  if (r.skills?.length) parts.push(`${r.skills.length} ${r.skills.length === 1 ? "skill" : "skills"}`);
   return parts.join(", ");
 }
 
@@ -52,25 +52,4 @@ export function fmtDate(iso) {
   } catch {
     return "";
   }
-}
-
-// Guests keep the summary in this browser only.
-const LOCAL = "rapport:resume";
-export function loadLocalResume() {
-  try {
-    const raw = localStorage.getItem(LOCAL);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-export function saveLocalResume(r) {
-  try {
-    localStorage.setItem(LOCAL, JSON.stringify(r));
-  } catch {}
-}
-export function clearLocalResume() {
-  try {
-    localStorage.removeItem(LOCAL);
-  } catch {}
 }
