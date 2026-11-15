@@ -22,7 +22,23 @@ export const EMPTY_SPEC = {
   pressure_mode: false,
   deep_followups: true,
   keyterms: [],
+  fixed_questions: [],
 };
+
+// One question per line. Blank lines are kept while typing; the server drops them.
+export function QuestionsField({ id = "questions", value, onChange, label, hint }) {
+  const lines = value || [];
+  const count = lines.filter((q) => q.trim()).length;
+  return (
+    <div>
+      <label className="field-label" htmlFor={id}>{label}</label>
+      <textarea id={id} className="field min-h-28" maxLength={2000} value={lines.join("\n")}
+        onChange={(e) => onChange(e.target.value.split("\n"))}
+        placeholder={"One question per line, for example:\nWalk me through a project you're proud of. What did you build yourself?\nHow would you design a rate limiter for a payments API?"} />
+      <p className={`hint ${count > 6 ? "!text-danger" : ""}`}>{count > 6 ? `Keep it to 6 questions (you have ${count}).` : hint}</p>
+    </div>
+  );
+}
 
 export function Seg({ value, options, onChange, label }) {
   return (
@@ -67,6 +83,9 @@ export default function SpecFields({ spec, onChange }) {
         <textarea id="resume" className="field min-h-20" maxLength={2000} value={spec.resume_highlights}
           onChange={(e) => set("resume_highlights")(e.target.value)} placeholder="A few lines about the candidate's experience" />
       </div>
+      <QuestionsField value={spec.fixed_questions} onChange={set("fixed_questions")}
+        label={<>Your questions <span className="text-muted font-normal">(optional, up to 6)</span></>}
+        hint="Every candidate gets the same questions, asked in order in the interview language, with live follow-ups. Leave empty to have Rapport write them." />
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
           <span className="field-label">Interview type</span>

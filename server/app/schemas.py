@@ -48,6 +48,26 @@ class InterviewSpec(_Strict):
     pressure_mode: bool = False
     deep_followups: bool = True
     keyterms: list[str] = Field(default_factory=list, max_length=60)
+    # Questions set by the recruiter (or the candidate, for practice). Asked in order; follow-ups stay live.
+    fixed_questions: list[str] = Field(default_factory=list)
+
+    @field_validator("fixed_questions", mode="before")
+    @classmethod
+    def _clean_questions(cls, v):
+        if not isinstance(v, list) or len(v) > 40:
+            raise ValueError("questions must be a short list")
+        out = []
+        for q in v:
+            q = " ".join(str(q).split())
+            if not q:
+                continue
+            if len(q) > 300:
+                raise ValueError("each question can be at most 300 characters")
+            if q not in out:
+                out.append(q)
+        if len(out) > 6:
+            raise ValueError("at most 6 questions")
+        return out
 
     @field_validator("keyterms")
     @classmethod

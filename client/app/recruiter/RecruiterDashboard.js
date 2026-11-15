@@ -57,6 +57,7 @@ export default function RecruiterDashboard() {
                   <div className="text-lg font-semibold">{t.name}</div>
                   <div className="text-sm text-muted">
                     {[t.role, TYPE[t.interview_type], `${t.duration_min} min`, LANG[t.language],
+                      t.fixed_questions?.length && `${t.fixed_questions.length} set ${t.fixed_questions.length === 1 ? "question" : "questions"}`,
                       t.pressure_mode && "pressure mode", t.deep_followups && "follow-ups"].filter(Boolean).join(", ")}
                   </div>
                 </div>
@@ -97,9 +98,11 @@ function TemplateForm({ initial, onDone, onCancel }) {
   async function save(e) {
     e.preventDefault();
     if (name.trim().length < 2 || spec.role.trim().length < 2) return setError("Add a template name and a role.");
+    const fixed = (spec.fixed_questions || []).map((q) => q.trim()).filter(Boolean);
+    if (fixed.length > 6) return setError("Keep your questions to 6 or fewer.");
     setBusy(true);
     try {
-      await api(initial ? `templates/${initial.id}` : "templates", { method: initial ? "PUT" : "POST", body: { name, ...spec } });
+      await api(initial ? `templates/${initial.id}` : "templates", { method: initial ? "PUT" : "POST", body: { name, ...spec, fixed_questions: fixed } });
       onDone();
     } catch (err) {
       setError(err.message);

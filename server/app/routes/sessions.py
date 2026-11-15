@@ -41,6 +41,7 @@ async def _assignment_spec(assignment_id: str, user: User | None) -> tuple[dict,
         raise HTTPException(410, "The recruiter removed this interview.")
     spec = {k: t[k] for k in ("role", "job_description", "resume_highlights", "interview_type",
                               "duration_min", "language", "pressure_mode", "deep_followups", "keyterms")}
+    spec["fixed_questions"] = list(t.get("fixed_questions") or [])
     return spec, a
 
 
@@ -79,12 +80,16 @@ async def create_session(body: SessionCreate, request: Request, user: User | Non
             raise HTTPException(502, "Could not validate your keys. Please try again.")
 
     model = llm.resolve_model(k.llm_provider, k.llm_model)
-    try:
-        plan = await llm.chat_json(k.llm_provider, k.llm_api_key, model, questions_messages(spec),
-                                   temperature=0.8, max_tokens=2000, timeout=45)
-    except llm.LLMError as e:
-        raise HTTPException(400 if e.auth else 502, str(e))
-    questions = [str(q).strip()[:300] for q in (plan.get("questions") or []) if str(q).strip()][:6]
+    if spec.get("fixed_questions"):
+        # Set questions are asked as written (rephrased into the interview language), so no plan is generated.
+        questions = list(spec["fixed_questions"])[:6]
+    else:
+        try:
+            plan = await llm.chat_json(k.llm_provider, k.llm_api_key, model, questions_messages(spec),
+                                       temperature=0.8, max_tokens=2000, timeout=45)
+        except llm.LLMError as e:
+            raise HTTPException(400 if e.auth else 502, str(e))
+        questions = [str(q).strip()[:300] for q in (plan.get("questions") or []) if str(q).strip()][:6]
     if not questions:
         raise HTTPException(502, "The LLM did not return interview questions. Try again or pick another model.")
 

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronDown, ChevronLeft } from "lucide-react";
-import { DURATIONS, EMPTY_SPEC, TYPES } from "@/components/SpecFields";
+import { DURATIONS, EMPTY_SPEC, QuestionsField, TYPES } from "@/components/SpecFields";
 import LaunchPanel, { DEFAULT_KEYS } from "@/components/LaunchPanel";
 import ResumeCard from "@/components/practice/ResumeCard";
 import { loadKeys } from "@/lib/api";
@@ -45,6 +45,10 @@ export default function Wizard() {
   const go = (to) => {
     if (to > step && step === 0 && spec.role.trim().length < 2) {
       setError("Name the role you're preparing for.");
+      return;
+    }
+    if (to > step && step === 0 && (spec.fixed_questions || []).filter((q) => q.trim()).length > 6) {
+      setError("Keep your own questions to 6 or fewer.");
       return;
     }
     setError("");
@@ -157,7 +161,7 @@ function Progress({ step, onJump }) {
 }
 
 function RoleStep({ spec, set, onNext }) {
-  const [more, setMore] = useState(Boolean(spec.job_description || spec.resume_highlights));
+  const [more, setMore] = useState(Boolean(spec.job_description || spec.resume_highlights || spec.fixed_questions?.some((q) => q.trim())));
   return (
     <div>
       <h1 className="display display-tight text-4xl sm:text-5xl text-accent">What are you interviewing for?</h1>
@@ -180,7 +184,7 @@ function RoleStep({ spec, set, onNext }) {
       <button type="button" onClick={() => setMore((m) => !m)} aria-expanded={more}
         className="mt-10 flex items-center gap-2 text-accent font-semibold">
         <motion.span animate={{ rotate: more ? 180 : 0 }}><ChevronDown size={18} /></motion.span>
-        Add a job description or resume notes
+        Add a job description or your own questions
         <span className="font-normal text-muted">(sharper questions)</span>
       </button>
       <AnimatePresence initial={false}>
@@ -198,6 +202,9 @@ function RoleStep({ spec, set, onNext }) {
                 <textarea id="resume" className="field min-h-20" maxLength={2000} value={spec.resume_highlights}
                   onChange={(e) => set("resume_highlights")(e.target.value)} />
               </div>
+              <QuestionsField value={spec.fixed_questions} onChange={set("fixed_questions")}
+                label={<>Questions you want to be asked <span className="text-muted font-normal">(optional, up to 6)</span></>}
+                hint="Asked in order in the interview language, with follow-ups. Leave empty and Rapport writes them for the role." />
               <div>
                 <label className="field-label" htmlFor="terms">Tools and terms you&apos;ll mention</label>
                 <input id="terms" className="field" placeholder="Redis, Kubernetes, Salesforce"
