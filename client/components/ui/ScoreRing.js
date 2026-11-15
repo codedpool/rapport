@@ -9,7 +9,7 @@ export default function ScoreRing({ value, size = 132 }) {
   const r = size / 2 - 9;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(1, (value || 0) / 10));
-  const color = value >= 7 ? "var(--sage)" : value >= 5 ? "var(--haldi)" : "var(--danger)";
+  const color = value >= 7 ? "var(--sage)" : value >= 4 ? "var(--haldi)" : "var(--danger)";
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90" aria-hidden>

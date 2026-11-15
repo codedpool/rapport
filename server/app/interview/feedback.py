@@ -71,7 +71,7 @@ QUOTES
 - Every "quote" must be copied exactly, character for character, from a Candidate line, in its original script. 3 to 25 words. Never translate or paraphrase a quote.
 
 Scores are integers 1 to 5 (5 excellent, 3 passable, 1 weak). "overall" is an integer 1 to 10.
-Write all feedback text in English.
+Write all feedback text in English, addressed directly to the candidate as "you" (never "the candidate").
 
 Return JSON only:
 {{
@@ -81,7 +81,7 @@ Return JSON only:
   "strengths": [{{"point": "...", "quote": "..."}}],
   "improvements": [{{"point": "...", "quote": "..."}}],
   "examples": [{{"question": "...", "your_answer_quote": "...", "improved_answer": "2-4 realistic sentences"}}],
-  "language_note": "one sentence naming the language(s) the candidate used, noting it was not scored"
+  "language_note": "one sentence to the candidate naming the language(s) they used, noting it was not scored"
 }}
 Give 2-3 strengths, 2-3 improvements and 1-2 examples for the weakest moments."""},
     ]
