@@ -15,25 +15,26 @@ import re
 
 import httpx
 
+from .config import settings
 from .security import redact
 
 GROQ_CHAIN = ["qwen/qwen3.8-27b", "openai/gpt-oss-20b", "openai/gpt-oss-120b"]
 
 PROVIDERS = {
     "groq": {
-        "base_url": "https://api.groq.com/openai/v1",
+        "base_url": settings.groq_base_url,
         "default_model": GROQ_CHAIN[0],
         "chain": GROQ_CHAIN,
         "request_budget": 7000,  # prompt + reply per request, under the 8k tokens/minute free limit
     },
     "openrouter": {
-        "base_url": "https://openrouter.ai/api/v1",
+        "base_url": settings.openrouter_base_url,
         "default_model": "nvidia/nemotron-3.5-super-vl:free",
         "chain": ["nvidia/nemotron-3.5-super-vl:free", "baidu/ernie-5.5-flash-preview:free"],
         "request_budget": 60000,
     },
     "gemini": {
-        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "base_url": settings.gemini_base_url,
         "default_model": "gemini-3.5-flash-lite",
         "chain": ["gemini-3.5-flash-lite"],
         "request_budget": 60000,
@@ -105,13 +106,15 @@ async def validate_key(provider: str, key: str) -> None:
     """Cheap, credit-free key check."""
     try:
         async with httpx.AsyncClient(timeout=10) as c:
+            base = base_url(provider).rstrip("/")
             if provider == "groq":
-                r = await c.get("https://api.groq.com/openai/v1/models", headers={"Authorization": f"Bearer {key}"})
+                r = await c.get(f"{base}/models", headers={"Authorization": f"Bearer {key}"})
             elif provider == "openrouter":
-                r = await c.get("https://openrouter.ai/api/v1/key", headers={"Authorization": f"Bearer {key}"})
+                r = await c.get(f"{base}/key", headers={"Authorization": f"Bearer {key}"})
             else:
-                r = await c.get("https://generativelanguage.googleapis.com/v1beta/models",
-                                params={"pageSize": 1}, headers={"x-goog-api-key": key})
+                # Gemini's native models list sits one level above its OpenAI-compatible path.
+                native = base.removesuffix("/openai")
+                r = await c.get(f"{native}/models", params={"pageSize": 1}, headers={"x-goog-api-key": key})
     except httpx.HTTPError:
         raise LLMError("Could not reach the LLM provider. Check your connection and try again.")
     if r.status_code in (400, 401, 403):

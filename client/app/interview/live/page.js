@@ -11,7 +11,8 @@ import { clearLive, peekLive } from "@/lib/api";
 import { PcmPlayer, startMic } from "@/lib/audio";
 import { LANGUAGES } from "@/components/SpecFields";
 
-const WS_URL = (process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000").replace(/\/$/, "");
+// The API's websocket URL comes from the environment (NEXT_PUBLIC_WS_URL).
+const WS_URL = (process.env.NEXT_PUBLIC_WS_URL || "").replace(/\/$/, "");
 
 function fmt(s) {
   const m = Math.floor(Math.max(0, s) / 60);
@@ -51,6 +52,11 @@ export default function LivePage() {
     let cancelled = false;
     const timer = setTimeout(() => {
       const live = peekLive();
+      if (!WS_URL) {
+        setPhase("error");
+        setError("NEXT_PUBLIC_WS_URL is not configured for this site.");
+        return;
+      }
       if (!live || Date.now() - live.at > 110_000) {
         setPhase("error");
         setError("This interview link has expired. Start a new one.");

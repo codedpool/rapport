@@ -1,0 +1,39 @@
+# Render Blueprint for the Rapport API (Dashboard > New > Blueprint > pick this repo).
+# Values marked sync: false are entered in the Render dashboard; no URL or secret lives in this file.
+services:
+  - type: web
+    name: rapport-api
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: server
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: CLIENT_ORIGINS
+        sync: false
+      - key: GNANI_STT_URL
+        sync: false
+      - key: GNANI_TTS_URL
+        sync: false
+      - key: GROQ_BASE_URL
+        sync: false
+      - key: OPENROUTER_BASE_URL
+        sync: false
+      - key: GEMINI_BASE_URL
+        sync: false
+      - key: AUTH0_DOMAIN
+        sync: false
+      - key: AUTH0_CLIENT_ID
+        sync: false
+      - key: AUTH0_CLIENT_SECRET
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: INTERNAL_API_SECRET
+        sync: false
+      - key: TRUST_PROXY_HEADERS
+        value: "true"
+      - key: LOG_LEVEL
+        value: INFO

@@ -5,6 +5,7 @@ import time
 from collections.abc import AsyncIterator
 
 import pipecat_gnani.stt as _gnani_stt
+import pipecat_gnani.tts as _gnani_tts
 import websockets
 from pipecat.services.tts_service import TextAggregationMode
 from pipecat.transcriptions.language import Language
@@ -12,7 +13,12 @@ from pipecat.utils.text.base_text_aggregator import Aggregation
 from pipecat.utils.text.simple_text_aggregator import SimpleTextAggregator
 from pipecat_gnani import GnaniSTTService, GnaniTTSService
 
-STT_URL = "wss://api.vachana.ai/stt/v3/stream"
+from .config import settings
+
+# Endpoints come from the environment; point the plugin at them too.
+STT_URL = settings.gnani_stt_url
+_gnani_stt.GNANI_STT_WS_URL = settings.gnani_stt_url
+_gnani_tts.GNANI_TTS_WS_URL = settings.gnani_tts_url
 
 # The plugin does not expose the idle-timeout or VAD headers, so extend the
 # header builder it uses for the websocket handshake. A candidate who pauses to

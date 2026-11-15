@@ -19,10 +19,15 @@ venv/
 .pytest_cache/
 .mypy_cache/
 
-# audio / scratch
+# audio / video / scratch
 *.wav
 *.mp3
+*.mp4
+*.mkv
 scratch/
+
+# filled-in env files for pasting into hosting dashboards
+deploy/
 
 # os / editor
 .DS_Store

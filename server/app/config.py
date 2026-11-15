@@ -28,9 +28,13 @@ def _list(name: str, default: str) -> list[str]:
 
 @dataclass(frozen=True)
 class Settings:
-    client_origins: list[str] = field(
-        default_factory=lambda: _list("CLIENT_ORIGINS", "http://localhost:3000")
-    )
+    # Every URL comes from the environment; nothing is hardcoded.
+    client_origins: list[str] = field(default_factory=lambda: _list("CLIENT_ORIGINS", ""))
+    gnani_stt_url: str = os.getenv("GNANI_STT_URL", "").strip()
+    gnani_tts_url: str = os.getenv("GNANI_TTS_URL", "").strip()
+    groq_base_url: str = os.getenv("GROQ_BASE_URL", "").strip().rstrip("/")
+    openrouter_base_url: str = os.getenv("OPENROUTER_BASE_URL", "").strip().rstrip("/")
+    gemini_base_url: str = os.getenv("GEMINI_BASE_URL", "").strip().rstrip("/")
     auth0_domain: str = os.getenv("AUTH0_DOMAIN", "").replace("https://", "").rstrip("/")
     auth0_client_id: str = os.getenv("AUTH0_CLIENT_ID", "")
     auth0_client_secret: str = os.getenv("AUTH0_CLIENT_SECRET", "")
@@ -59,3 +63,15 @@ class Settings:
 
 
 settings = Settings()
+
+REQUIRED = {
+    "CLIENT_ORIGINS": settings.client_origins, "MONGODB_URI": settings.mongodb_uri,
+    "AUTH0_DOMAIN": settings.auth0_domain, "AUTH0_CLIENT_ID": settings.auth0_client_id,
+    "GNANI_STT_URL": settings.gnani_stt_url, "GNANI_TTS_URL": settings.gnani_tts_url,
+    "GROQ_BASE_URL": settings.groq_base_url, "OPENROUTER_BASE_URL": settings.openrouter_base_url,
+    "GEMINI_BASE_URL": settings.gemini_base_url,
+}
+
+
+def missing_settings() -> list[str]:
+    return [k for k, v in REQUIRED.items() if not v]

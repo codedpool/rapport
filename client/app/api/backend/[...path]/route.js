@@ -3,8 +3,12 @@
 import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 
-const API_URL = (process.env.API_URL || "http://localhost:8000").replace(/\/$/, "");
+// Every URL comes from the environment (API_URL in .env.local locally, project settings on Vercel).
+const API_URL = (process.env.API_URL || "").replace(/\/$/, "");
 const INTERNAL = process.env.INTERNAL_API_SECRET || "";
+// A sleeping free-tier API can take most of a minute to wake; starting an interview also generates questions.
+export const maxDuration = 60;
+const UPSTREAM_TIMEOUT_MS = 55_000;
 const SEGMENT = /^[A-Za-z0-9_-]{1,64}$/;
 const MAX_BODY = 64 * 1024;
 
@@ -23,6 +27,7 @@ function sameSite(request) {
 
 async function forward(request, { params }) {
   if (!sameSite(request)) return NextResponse.json({ detail: "Forbidden." }, { status: 403 });
+  if (!API_URL) return NextResponse.json({ detail: "API_URL is not configured." }, { status: 500 });
   const { path } = await params;
   if (!Array.isArray(path) || path.length === 0 || path.length > 4 || !path.every((s) => SEGMENT.test(s))) {
     return NextResponse.json({ detail: "Not found." }, { status: 404 });
@@ -51,8 +56,11 @@ async function forward(request, { params }) {
 
   let res;
   try {
-    res = await fetch(url, { method: request.method, headers, body, cache: "no-store" });
-  } catch {
+    res = await fetch(url, { method: request.method, headers, body, cache: "no-store", signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) });
+  } catch (e) {
+    if (e?.name === "TimeoutError") {
+      return NextResponse.json({ detail: "The interview server is still waking up. Try again in a moment." }, { status: 504 });
+    }
     return NextResponse.json({ detail: "The interview server is not reachable." }, { status: 502 });
   }
   const text = await res.text();

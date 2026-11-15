@@ -100,8 +100,12 @@ Auth0 application settings: Allowed Callback URLs `http://localhost:3000/auth/ca
 
 ## Deploying
 
-- **API:** `server/Dockerfile`. Run it as a persistent container (Render, Railway, Fly.io, a VM). It holds long-lived voice websockets, so serverless functions won't work. Set `CLIENT_ORIGINS` to the web app's URL, `TRUST_PROXY_HEADERS=true` behind a proxy, plus the `.env` values.
-- **Web app:** Vercel or any Next.js host. Set the `client/.env.example` values, with `API_URL` pointing at the API and `NEXT_PUBLIC_WS_URL` at its `wss://` URL. Add the production callback and logout URLs in Auth0.
+Every URL comes from environment variables; the API refuses to start if one is missing.
+
+- **API on Render:** `render.yaml` is a Blueprint (Docker, free plan, `/health` check). It holds long-lived voice websockets, so it must be a persistent service, not serverless. Enter the server variables from `.env.example`, with `CLIENT_ORIGINS` set to the web app's URL. The free plan sleeps when idle; the web app shows a "backend is waking up" toast and retries until it answers.
+- **Web app on Vercel:** root directory `client`. Set the `client/.env.example` values, with `API_URL` pointing at the Render URL and `NEXT_PUBLIC_WS_URL` at its `wss://` form, then redeploy (the `NEXT_PUBLIC_` value is built in).
+- **Auth0:** add `https://<web app>/auth/callback` to Allowed Callback URLs, and the web app URL to Allowed Logout URLs and Allowed Web Origins.
+- **MongoDB Atlas:** Render's free plan has no fixed outbound IP, so allow `0.0.0.0/0` under Network Access.
 
 ## Privacy
 

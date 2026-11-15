@@ -9,10 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from .config import settings
+from .config import missing_settings, settings
 from .security import setup_logging
 
 setup_logging(settings.log_level)
+if missing_settings():
+    raise RuntimeError(f"Missing environment variables: {', '.join(missing_settings())}. See .env.example.")
 
 from . import db  # noqa: E402
 from .interview import records  # noqa: E402
