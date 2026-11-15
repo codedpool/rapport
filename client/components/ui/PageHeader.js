@@ -1,20 +1,22 @@
 import Image from "next/image";
 
-// App page header: a cream band with an illustration fading in from the right.
-export default function PageHeader({ title, subtitle, image = "/images/sunset.webp", children }) {
+// App page header: title on the left, the whole illustration framed on the right.
+// The picture keeps its own shape (ratio) so nothing in it is cut off.
+export default function PageHeader({ title, subtitle, image, ratio = "4 / 3", alt = "", children }) {
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-6">
-      <div className="relative overflow-hidden rounded-[1.75rem] card !border-white min-h-[13rem]">
-        <Image src={image} alt="" fill sizes="(min-width: 1024px) 70vw, 100vw" priority
-          className="object-cover object-right" />
-        <div aria-hidden className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,250,243,0.97)_0%,rgba(255,250,243,0.9)_42%,rgba(255,250,243,0.15)_78%)]" />
-        <div className="relative px-6 sm:px-10 py-10 sm:py-12 flex flex-wrap items-end justify-between gap-6">
-          <div className="max-w-xl">
-            <h1 className="display display-tight text-4xl sm:text-5xl text-accent">{title}</h1>
-            {subtitle && <p className="mt-3 text-lg text-ink-2">{subtitle}</p>}
-          </div>
-          {children}
+      <div className="card !border-white !bg-[#fffaf3] rounded-[1.75rem] p-3 flex items-stretch gap-3">
+        <div className="flex-1 min-w-0 px-4 sm:px-7 py-7 sm:py-9 flex flex-col justify-center">
+          <h1 className="display display-tight text-4xl sm:text-5xl text-accent">{title}</h1>
+          {subtitle && <p className="mt-3 text-lg text-ink-2 max-w-xl">{subtitle}</p>}
+          {children && <div className="mt-6 flex flex-wrap gap-3">{children}</div>}
         </div>
+        {image && (
+          <div className="hidden md:block relative shrink-0 h-[13.5rem] lg:h-[15rem] rounded-[1.35rem] overflow-hidden"
+            style={{ aspectRatio: ratio }}>
+            <Image src={image} alt={alt} fill sizes="(min-width: 1024px) 320px, 290px" priority className="object-cover" />
+          </div>
+        )}
       </div>
     </section>
   );

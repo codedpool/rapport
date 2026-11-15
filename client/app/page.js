@@ -84,20 +84,21 @@ export default function Home() {
 }
 
 function Door({ href, image, alt, title, body, cta, external }) {
+  // The picture is framed at its own 4:3 shape, so the whole illustration shows at every width.
   const inner = (
     <>
-      <Image src={image} alt={alt} fill sizes="(min-width: 768px) 50vw, 100vw"
-        className="object-cover object-right transition-transform duration-700 ease-out group-hover:scale-[1.04]" />
-      <div aria-hidden className="absolute inset-0 bg-[linear-gradient(rgba(255,248,240,0.86),rgba(255,248,240,0.86))] sm:bg-[linear-gradient(90deg,rgba(255,248,240,0.96)_0%,rgba(255,248,240,0.88)_34%,rgba(255,248,240,0)_52%)]" />
-      <div className="relative h-full flex flex-col justify-between p-7 sm:p-9 sm:max-w-[58%] lg:max-w-[52%]">
+      <div className="relative aspect-[4/3] rounded-[1.35rem] overflow-hidden">
+        <Image src={image} alt={alt} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
+      </div>
+      <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pt-6 pb-4">
         <div>
           <h3 className="display display-tight text-3xl sm:text-[2.3rem] text-accent">{title}</h3>
-          <p className="mt-4 text-ink-2 leading-relaxed">{body}</p>
+          <p className="mt-3 text-ink-2 leading-relaxed max-w-lg">{body}</p>
         </div>
-        <span className="btn btn-outline self-start mt-6">{cta} <ArrowRight size={17} /></span>
+        <span className="btn btn-outline self-start mt-6">{cta} <ArrowRight size={17} className="transition-transform group-hover:translate-x-1" /></span>
       </div>
     </>
   );
-  const cls = "group relative block min-h-[22rem] sm:min-h-[26rem] rounded-[1.75rem] overflow-hidden card !border-white";
+  const cls = "group flex flex-col p-3 rounded-[1.75rem] card !border-white !bg-[#fffaf3]";
   return external ? <a href={href} className={cls}>{inner}</a> : <Link href={href} className={cls}>{inner}</Link>;
 }
