@@ -19,7 +19,7 @@ It is one platform for AI interviews and hiring, and it judges <i>what you say</
 
 ## ▶ Watch the demo (2:50)
 
-https://github.com/user-attachments/assets/1ece003a-3414-4141-95e7-8db9f5752fff
+https://github.com/user-attachments/assets/a0762218-084f-4e85-ab06-0f143d22907b
 
 <p align="center">
   <a href="https://youtu.be/82hnE6z7Kh4"><b>▶ Prefer YouTube? Watch it in full HD →</b></a>
