@@ -40,7 +40,7 @@ Hiring teams run the whole first round for a large pool of candidates. They buil
 
 Rapport is deliberately **BYOK (bring your own key)**, so anyone can try the full product today, not just watch a demo.
 
-- Get a Gnani key at **app.gnani.ai**. Gnani gives **5,000 free API credits** to start.
+- Get a Gnani key at **app.gnani.ai/voice**. Students registered for Gnani's Great Indian AI Internship Challenge get **5,000 free API credits**.
 - Get a free Groq key at **console.groq.com**.
 - Paste both in and start interviewing.
 
